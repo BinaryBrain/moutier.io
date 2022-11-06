@@ -5,6 +5,7 @@ import asyncio
 from player import Player
 from game import Game
 from direction import Direction
+from color import Color, usable_colors
 
 HOST = ""
 PORT = 4848
@@ -32,7 +33,12 @@ class Server:
         conn, address = soc.accept()
         print(f"New connection ({len(self.players) + 1}) from: {address[0]}")
         conn.setblocking(False)
-        player = Player(conn, "BinaryBrain", f"{len(self.players) + 1}")
+        player = Player(
+            conn,
+            "BinaryBrain",
+            f"{len(self.players) + 1}",
+            Color[usable_colors[len(self.players) % len(usable_colors)]],
+        )
         self.players.add(player)
         self.set_mode(conn)
         self.sel.register(conn, selectors.EVENT_READ, self.read_client_data)
@@ -58,7 +64,7 @@ class Server:
                 str = data.decode("utf-8").strip()
                 # else:
                 # broadcast(str + '\r\n')
-            except UnicodeDecodeError as e:
+            except UnicodeDecodeError:
                 print("Control character received", data)
         else:
             print("Good bye!")

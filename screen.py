@@ -1,3 +1,6 @@
+from color import Color
+
+
 class Screen:
     def __init__(self, width, height):
         self.width = width
@@ -12,4 +15,5 @@ class Screen:
     def getCurrentScreen(self, worldMap):
         # screen = self.frame
         screen = str(worldMap)
+        screen += Color["RESET"]  # Don't bleed on the rest of the terminal
         return screen
