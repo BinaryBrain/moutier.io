@@ -27,5 +27,4 @@ class Game:
             self.t = self.t + 1
 
     def sendScreen(self):
-        self.server.broadcast_clear_screen()
         self.server.broadcast(self.screen.getCurrentScreen(self.map))

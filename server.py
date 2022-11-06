@@ -1,6 +1,7 @@
 import socket
 import selectors
 import asyncio
+import constants
 
 from player import Player
 from game import Game
@@ -9,11 +10,6 @@ from color import Color, usable_colors
 
 HOST = ""
 PORT = 4848
-
-KEY_UP = b"\x1b[A"
-KEY_DOWN = b"\x1b[B"
-KEY_RIGHT = b"\x1b[C"
-KEY_LEFT = b"\x1b[D"
 
 
 class Server:
@@ -47,16 +43,16 @@ class Server:
         data = conn.recv(1024)
         player = next(p for p in self.players if p.conn == conn)
         if data:
-            if data == KEY_UP:
+            if data == constants.KEY_UP:
                 player.direction = Direction.UP
                 self.send(conn, "UP")
-            if data == KEY_DOWN:
+            if data == constants.KEY_DOWN:
                 player.direction = Direction.DOWN
                 self.send(conn, "DOWN")
-            if data == KEY_LEFT:
+            if data == constants.KEY_LEFT:
                 player.direction = Direction.LEFT
                 self.send(conn, "LEFT")
-            if data == KEY_RIGHT:
+            if data == constants.KEY_RIGHT:
                 player.direction = Direction.RIGHT
                 self.send(conn, "RIGHT")
 
@@ -89,7 +85,7 @@ class Server:
             self.clear_screen(player.conn)
 
     def clear_screen(self, conn):
-        self.send(conn, "\033[2J\r")
+        self.send(conn, constants.CLEAR_CHARACTER)
 
     # Change the mode so that each character is sent without pressing ENTER
     def set_mode(self, conn):

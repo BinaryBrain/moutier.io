@@ -1,3 +1,6 @@
+import constants
+
+
 class Map:
     def __init__(self, width, height):
         self.width = width
@@ -17,4 +20,4 @@ class Map:
         return asciiMap
 
     def draw(self, player):
-        self.squares[player.posX][player.posY] = player.color + "\u2588"
+        self.squares[player.posX][player.posY] = player.color + constants.FULL_BLOCK

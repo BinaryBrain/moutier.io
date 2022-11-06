@@ -1,0 +1,6 @@
+CLEAR_CHARACTER = "\033[2J\r"
+KEY_UP = b"\x1b[A"
+KEY_DOWN = b"\x1b[B"
+KEY_RIGHT = b"\x1b[C"
+KEY_LEFT = b"\x1b[D"
+FULL_BLOCK = "\u2588"
