@@ -6,8 +6,8 @@ class Screen:
         self.loadAssets()
 
     def loadAssets(self):
-        f = open("assets/frame.txt", "r")
-        self.frame = f.read()
+        with open("assets/frame.txt", "r") as f:
+            self.frame = f.read()
 
     def getCurrentScreen(self):
         return self.frame
