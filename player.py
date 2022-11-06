@@ -2,10 +2,11 @@ from direction import Direction
 
 
 class Player:
-    def __init__(self, conn, name, symbol):
+    def __init__(self, conn, name, symbol, color):
         self.conn = conn
         self.name = name
         self.symbol = symbol
+        self.color = color
         self.posX = 0
         self.posY = 0
         self.direction = Direction.STOP

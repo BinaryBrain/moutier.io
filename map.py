@@ -17,4 +17,4 @@ class Map:
         return asciiMap
 
     def draw(self, player):
-        self.squares[player.posX][player.posY] = player.symbol
+        self.squares[player.posX][player.posY] = player.color + "\u2588"
