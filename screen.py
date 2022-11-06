@@ -9,5 +9,7 @@ class Screen:
         with open("assets/frame.txt", "r") as f:
             self.frame = f.read()
 
-    def getCurrentScreen(self):
-        return self.frame
+    def getCurrentScreen(self, worldMap):
+        # screen = self.frame
+        screen = str(worldMap)
+        return screen

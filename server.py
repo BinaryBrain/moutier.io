@@ -4,6 +4,7 @@ import asyncio
 
 from player import Player
 from game import Game
+from direction import Direction
 
 HOST = ""
 PORT = 4848
@@ -38,21 +39,23 @@ class Server:
 
     def read_client_data(self, conn, mask):
         data = conn.recv(1024)
+        player = next(p for p in self.players if p.conn == conn)
         if data:
             if data == KEY_UP:
+                player.direction = Direction.UP
                 self.send(conn, "UP")
             if data == KEY_DOWN:
+                player.direction = Direction.DOWN
                 self.send(conn, "DOWN")
             if data == KEY_LEFT:
+                player.direction = Direction.LEFT
                 self.send(conn, "LEFT")
             if data == KEY_RIGHT:
+                player.direction = Direction.RIGHT
                 self.send(conn, "RIGHT")
 
             try:
                 str = data.decode("utf-8").strip()
-                print(str)
-                if str == "clear":
-                    self.clear_screen(conn)
                 # else:
                 # broadcast(str + '\r\n')
             except UnicodeDecodeError as e:
