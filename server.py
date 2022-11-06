@@ -5,13 +5,14 @@ import asyncio
 from player import Player
 from game import Game
 
-HOST = ''
+HOST = ""
 PORT = 4848
 
-KEY_UP = b'\x1b[A'
-KEY_DOWN = b'\x1b[B'
-KEY_RIGHT = b'\x1b[C'
-KEY_LEFT = b'\x1b[D'
+KEY_UP = b"\x1b[A"
+KEY_DOWN = b"\x1b[B"
+KEY_RIGHT = b"\x1b[C"
+KEY_LEFT = b"\x1b[D"
+
 
 class Server:
     def __init__(self):
@@ -23,15 +24,15 @@ class Server:
         self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-        self.players = []
+        self.players = set()
         self.game = Game(self)
 
     def accept_new_connection(self, soc, mask):
         conn, address = soc.accept()
-        print(f'New connection ({len(self.players) + 1}) from: {address[0]}')
+        print(f"New connection ({len(self.players) + 1}) from: {address[0]}")
         conn.setblocking(False)
         player = Player(conn, "BinaryBrain", f"{len(self.players) + 1}")
-        self.players.append(player)
+        self.players.add(player)
         self.set_mode(conn)
         self.sel.register(conn, selectors.EVENT_READ, self.read_client_data)
 
@@ -48,23 +49,25 @@ class Server:
                 self.send(conn, "RIGHT")
 
             try:
-                str = data.decode('utf-8').strip()
+                str = data.decode("utf-8").strip()
                 print(str)
                 if str == "clear":
                     self.clear_screen(conn)
                 # else:
-                    # broadcast(str + '\r\n')
+                # broadcast(str + '\r\n')
             except UnicodeDecodeError as e:
                 print("Control character received", data)
         else:
-            print('Good bye!')
+            print("Good bye!")
             self.sel.unregister(conn)
-            self.players = [p for p in self.players if p.conn != conn] # remove player from list
+            self.players.remove(
+                next(p for p in self.players if p.conn == conn)
+            )  # remove player from list
             conn.close()
 
     def send(self, conn, msg):
         try:
-            conn.send(msg.encode('utf-8'))
+            conn.send(msg.encode("utf-8"))
         except BrokenPipeError:
             pass
 
@@ -81,29 +84,30 @@ class Server:
 
     # Change the mode so that each character is sent without pressing ENTER
     def set_mode(self, conn):
-        conn.send(b"\xff\xfd\x22") # IAC DO LINEMODE
-        conn.send(b"\xff\xfa\x22\x01\x00\xff\xf0") # IAC SB LINEMODE MODE 0 IAC SE
+        conn.send(b"\xff\xfd\x22")  # IAC DO LINEMODE
+        conn.send(b"\xff\xfa\x22\x01\x00\xff\xf0")  # IAC SB LINEMODE MODE 0 IAC SE
 
     def set_client_echo(self, conn, bool):
         if bool:
-            conn.send(b"\xff\xfb\x01") # IAC WILL ECHO
+            conn.send(b"\xff\xfb\x01")  # IAC WILL ECHO
         else:
-            conn.send(b"\xff\xfc\x01") # IAC WILL NOT ECHO
+            conn.send(b"\xff\xfc\x01")  # IAC WILL NOT ECHO
 
     async def start(self):
         self.soc.bind((self.host, self.port))
         self.soc.listen()
         self.soc.setblocking(False)
 
-        print('Server listening...')
+        print("Server listening...")
         self.sel.register(self.soc, selectors.EVENT_READ, self.accept_new_connection)
 
         while True:
-            events = self.sel.select(0) # set to 0 for non-blocking loop
+            events = self.sel.select(0)  # set to 0 for non-blocking loop
             for key, mask in events:
                 callback = key.data
                 callback(key.fileobj, mask)
-            await asyncio.sleep(1 / 5) # TODO sync on FPS or something
+            await asyncio.sleep(1 / 5)  # TODO sync on FPS or something
+
 
 try:
     server = Server()
