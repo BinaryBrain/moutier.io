@@ -45,13 +45,13 @@ class Server:
         data = conn.recv(1024)
         player = next(p for p in self.players if p.conn == conn)
         if data:
-            if data == constants.KEY_UP:
+            if data == constants.KEY_UP and player.direction != Direction.DOWN:
                 player.direction = Direction.UP
-            if data == constants.KEY_DOWN:
+            if data == constants.KEY_DOWN and player.direction != Direction.UP:
                 player.direction = Direction.DOWN
-            if data == constants.KEY_LEFT:
+            if data == constants.KEY_LEFT and player.direction != Direction.RIGHT:
                 player.direction = Direction.LEFT
-            if data == constants.KEY_RIGHT:
+            if data == constants.KEY_RIGHT and player.direction != Direction.LEFT:
                 player.direction = Direction.RIGHT
 
             try:
