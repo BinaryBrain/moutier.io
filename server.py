@@ -37,6 +37,8 @@ class Server:
         )
         self.players.add(player)
         self.set_mode(conn)
+        self.set_client_echo(conn, True)
+        self.clear_screen(conn)
         self.sel.register(conn, selectors.EVENT_READ, self.read_client_data)
 
     def read_client_data(self, conn, mask):
@@ -45,16 +47,12 @@ class Server:
         if data:
             if data == constants.KEY_UP:
                 player.direction = Direction.UP
-                self.send(conn, "UP")
             if data == constants.KEY_DOWN:
                 player.direction = Direction.DOWN
-                self.send(conn, "DOWN")
             if data == constants.KEY_LEFT:
                 player.direction = Direction.LEFT
-                self.send(conn, "LEFT")
             if data == constants.KEY_RIGHT:
                 player.direction = Direction.RIGHT
-                self.send(conn, "RIGHT")
 
             try:
                 str = data.decode("utf-8").strip()
