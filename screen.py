@@ -14,8 +14,7 @@ class Screen:
             self.frame = f.read()
 
     def getCurrentScreen(self, worldMap):
-        screen = constants.CLEAR_CHARACTER
-        screen += "\r\n"
+        screen = constants.CURSOR_PREVIOUS_LINE * worldMap.height
         # screen += self.frame
         screen += str(worldMap)
         screen += Color["RESET"]  # Don't bleed on the rest of the terminal

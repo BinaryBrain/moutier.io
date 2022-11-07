@@ -1,4 +1,5 @@
 CLEAR_CHARACTER = "\033[2J\r"
+CURSOR_PREVIOUS_LINE = "\033[F"
 KEY_UP = b"\x1b[A"
 KEY_DOWN = b"\x1b[B"
 KEY_RIGHT = b"\x1b[C"
