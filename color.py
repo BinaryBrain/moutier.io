@@ -1,13 +1,13 @@
 Color = {
-    "BLACK": "\u001b[30m",
-    "RED": "\u001b[31m",
-    "GREEN": "\u001b[32m",
-    "YELLOW": "\u001b[33m",
-    "BLUE": "\u001b[34m",
-    "MAGENTA": "\u001b[35m",
-    "CYAN": "\u001b[36m",
-    "WHITE": "\u001b[37m",
-    "RESET": "\u001b[0m",
+    "BLACK": "\033[30m",
+    "RED": "\033[31m",
+    "GREEN": "\033[32m",
+    "YELLOW": "\033[33m",
+    "BLUE": "\033[34m",
+    "MAGENTA": "\033[35m",
+    "CYAN": "\033[36m",
+    "WHITE": "\033[37m",
+    "RESET": "\033[0m",
 }
 
 usable_colors = ["RED", "GREEN", "YELLOW", "BLUE", "MAGENTA", "CYAN", "WHITE"]
