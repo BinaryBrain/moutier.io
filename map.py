@@ -29,8 +29,5 @@ class Map:
             lines.append(line)
         return lines
 
-    # TODO draw players here or in screen.py
-    # self.squares[player.posX][player.posY] = str(player)
-
     def update(self, player):
         self.squares[player.prev_pos_x][player.prev_pos_y] = Square(SquareState.TRAIL, player)

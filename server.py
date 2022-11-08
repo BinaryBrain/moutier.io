@@ -41,6 +41,9 @@ class Server:
         self.clear_screen(conn)
         self.sel.register(conn, selectors.EVENT_READ, self.read_client_data)
 
+        if len(self.players) >= 1:
+            self.game.initialize_game()
+
     def read_client_data(self, conn, mask):
         data = conn.recv(1024)
         player = next(p for p in self.players if p.conn == conn)

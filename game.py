@@ -1,14 +1,15 @@
 import time
 import asyncio
+import constants
 from map import Map
 from screen import Screen
-
-FPS = 5
+from square import Square
+from squareState import SquareState
 
 
 class Game:
     def __init__(self, server):
-        self.fps = FPS
+        self.fps = constants.FPS
         self.map = Map(40, 40)
         self.server = server
         self.screen = Screen(40, 40)
@@ -24,7 +25,7 @@ class Game:
 
             self.draw()
             end_timer = time.time()
-            await asyncio.sleep(1 / FPS - (end_timer - start_timer))
+            await asyncio.sleep(1 / constants.FPS - (end_timer - start_timer))
             self.t = self.t + 1
 
     def draw(self):
@@ -35,3 +36,11 @@ class Game:
 
     def sendScreen(self):
         self.server.broadcast(self.screen.getCurrentScreen())
+
+    def initialize_game(self):
+        for i, player in enumerate(self.server.players):
+            player.pos_x = 2
+            player.pos_y = 2
+            for x in range(3):
+                for y in range(3):
+                    self.map.squares[x][y] = Square(SquareState.OWNED, player)
