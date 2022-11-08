@@ -1,6 +1,5 @@
 from square import Square
 from squareState import SquareState
-import constants
 
 
 class Map:
@@ -21,8 +20,17 @@ class Map:
             asciiMap += "\r\n"
         return asciiMap
 
+    def to_lines(self):
+        lines = []
+        for y in range(self.height):
+            line = []
+            for x in range(self.width):
+                line.append(str(self.squares[x][y]))
+            lines.append(line)
+        return lines
+
     # TODO draw players here or in screen.py
     # self.squares[player.posX][player.posY] = str(player)
 
-    def draw(self, player):
+    def update(self, player):
         self.squares[player.prev_pos_x][player.prev_pos_y] = Square(SquareState.TRAIL, player)

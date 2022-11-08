@@ -19,13 +19,19 @@ class Game:
             start_timer = time.time()
             for player in self.server.players:
                 player.move(self.map)
-                self.map.draw(player)
+                self.map.update(player)
                 player.define_direction(player.direction)
 
-            self.sendScreen()
+            self.draw()
             end_timer = time.time()
             await asyncio.sleep(1 / FPS - (end_timer - start_timer))
             self.t = self.t + 1
 
+    def draw(self):
+        self.screen.draw(self.map.to_lines(), 0, 0)
+        for player in self.server.players:
+            self.screen.draw([[str(player)]], player.pos_x, player.pos_y)
+        self.sendScreen()
+
     def sendScreen(self):
-        self.server.broadcast(self.screen.getCurrentScreen(self.map))
+        self.server.broadcast(self.screen.getCurrentScreen())
