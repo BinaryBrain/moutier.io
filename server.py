@@ -32,7 +32,7 @@ class Server:
         player = Player(
             conn,
             "BinaryBrain",
-            f"{len(self.players) + 1}",
+            constants.FULL_BLOCK,
             Color[usable_colors[len(self.players) % len(usable_colors)]],
         )
         self.players.add(player)
@@ -46,16 +46,16 @@ class Server:
         player = next(p for p in self.players if p.conn == conn)
         if data:
             if data == constants.KEY_UP and player.direction != Direction.DOWN:
-                player.direction = Direction.UP
+                player.define_direction(Direction.UP)
             if data == constants.KEY_DOWN and player.direction != Direction.UP:
-                player.direction = Direction.DOWN
+                player.define_direction(Direction.DOWN)
             if data == constants.KEY_LEFT and player.direction != Direction.RIGHT:
-                player.direction = Direction.LEFT
+                player.define_direction(Direction.LEFT)
             if data == constants.KEY_RIGHT and player.direction != Direction.LEFT:
-                player.direction = Direction.RIGHT
+                player.define_direction(Direction.RIGHT)
 
             try:
-                str = data.decode("utf-8").strip()
+                text = data.decode("utf-8").strip()
                 # else:
                 # broadcast(str + '\r\n')
             except UnicodeDecodeError:

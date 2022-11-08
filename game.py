@@ -20,6 +20,7 @@ class Game:
             for player in self.server.players:
                 player.move(self.map)
                 self.map.draw(player)
+                player.define_direction(player.direction)
 
             self.sendScreen()
             end_timer = time.time()

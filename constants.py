@@ -4,4 +4,13 @@ KEY_UP = b"\x1b[A"
 KEY_DOWN = b"\x1b[B"
 KEY_RIGHT = b"\x1b[C"
 KEY_LEFT = b"\x1b[D"
+
 FULL_BLOCK = "\u2588"
+TRAIL_HORIZONTAL = "\u2501"  # ━
+TRAIL_VERTICAL =   "\u2503"  # ┃
+TRAIL_LEFT_DOWN =  "\u2513"  # ┓
+TRAIL_LEFT_UP =    "\u251B"  # ┛
+TRAIL_RIGHT_DOWN = "\u250F"  # ┏
+TRAIL_RIGHT_UP =   "\u2517"  # ┗
+
+EMPTY_SQUARE = " "
