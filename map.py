@@ -1,5 +1,6 @@
 from square import Square
 from squareState import SquareState
+from trail_direction import TrailDirection
 
 
 class Map:
@@ -45,5 +46,67 @@ class Map:
                     self.squares[x][y].owner = None
 
     def convert_owned_zone(self, player):
-        # TODO Convert to owned zone
+        if self.is_trail_close_path(player):
+            (x, y) = self.find_square_in_player_trail(player)
+            # TODO Paint the inside of the zone
+        else:
+            # TODO convert only the Trail
+            pass
+
+    def find_square_in_player_trail(self, player):
+        (x, y) = self.find_approximative_center_of_trail(player)
+        if self.is_square_in_player_trail(player, x, y):
+            self.squares[x][y].state = SquareState.OWNED
+            self.squares[x][y].owner = player
+            print("Square is in trail")
+            return (x, y)
+        else:
+            print("Square is not in trail")
+            # TODO find next intersection and cross it to be inside trail
+
+    def is_square_in_player_trail(self, player, pos_x, pos_y):
+        counter = self.count_intersection_from_square(player, pos_x, pos_y)
+        return counter % 2 == 1
+
+    def count_intersection_from_square(self, player, pos_x, pos_y):
+        counter = 0
+        y = pos_y
+        for x in range(pos_x, self.width):
+            square = self.squares[x][y]
+
+            if square.state is SquareState.TRAIL and square.owner is player:
+                direction = square.trail_direction
+                if (direction is TrailDirection.VERTICAL or
+                        direction is TrailDirection.LEFT_UP or
+                        direction is TrailDirection.RIGHT_UP):
+                    counter += 1
+
+            if square.state is SquareState.OWNED and square.owner is player:
+                if self.is_connected_to_trail(player, x, y):
+                    counter += 1
+        return counter
+
+    def is_connected_to_trail(self, player, pos_x, pos_y):
+        # TODO BFS to say if the trail is connected or not
+        return True
+
+    def find_approximative_center_of_trail(self, player):
+        counter = 0
+        add_x = 0
+        add_y = 0
+        for y in range(self.height):
+            for x in range(self.width):
+                square = self.squares[x][y]
+                if square.state is SquareState.TRAIL and square.owner is player:
+                    counter += 1
+                    add_x += x
+                    add_y += y
+        return (round(add_x / counter), round(add_y / counter))
+
+    def is_trail_close_path(self, player):
+        # TODO
+        return True
+
+
+    def BFS(self, condition, pos_x, pos_y):
         pass
