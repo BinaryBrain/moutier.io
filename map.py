@@ -30,4 +30,20 @@ class Map:
         return lines
 
     def update(self, player):
-        self.squares[player.prev_pos_x][player.prev_pos_y] = Square(SquareState.TRAIL, player)
+        square = self.squares[player.prev_pos_x][player.prev_pos_y]
+        if square.state is SquareState.OWNED and square.owner is player:
+            pass
+        else:
+            self.squares[player.prev_pos_x][player.prev_pos_y] = Square(SquareState.TRAIL, player)
+
+    def remove_player_trail(self, player):
+        for y in range(self.height):
+            for x in range(self.width):
+                square = self.squares[x][y]
+                if square.state is SquareState.TRAIL and square.owner is player:
+                    self.squares[x][y].state = SquareState.NEUTRAL
+                    self.squares[x][y].owner = None
+
+    def convert_owned_zone(self, player):
+        # TODO Convert to owned zone
+        pass

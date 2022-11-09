@@ -1,6 +1,7 @@
 import time
 import asyncio
 import constants
+import collisions
 from map import Map
 from screen import Screen
 from square import Square
@@ -22,6 +23,7 @@ class Game:
                 player.move(self.map)
                 self.map.update(player)
                 player.define_direction(player.direction)
+                collisions.check_collisions(self, player)
 
             self.draw()
             end_timer = time.time()
@@ -39,8 +41,8 @@ class Game:
 
     def initialize_game(self):
         for i, player in enumerate(self.server.players):
-            player.pos_x = 2
-            player.pos_y = 2
+            player.pos_x = 1
+            player.pos_y = 1
             for x in range(3):
                 for y in range(3):
                     self.map.squares[x][y] = Square(SquareState.OWNED, player)

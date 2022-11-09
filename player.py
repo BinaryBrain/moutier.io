@@ -13,6 +13,8 @@ class Player:
         self.pos_y = 0
         self.prev_direction = Direction.STOP
         self.direction = Direction.STOP
+        self.has_trail = False
+        self.alive = True
 
     def __str__(self):
         if self.direction is Direction.UP:
@@ -56,3 +58,6 @@ class Player:
         if self.pos_y > worldMap.height - 1:
             self.pos_y = worldMap.height - 1
             self.direction = Direction.STOP
+
+    def kill(self):
+        self.alive = False
