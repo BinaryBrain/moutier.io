@@ -49,25 +49,32 @@ class Map:
 
     def convert_owned_zone(self, player):
         # TODO Convert to owned zone
-        # Optimize by taking only bounding box?
         # Check if other players have at least one owned square or kill them
         if self.is_trail_close_path(player):
-            (x, y) = self.find_square_in_player_trail(player)
-            self.fill_zone(player, x, y)
+            self.basic_fill_zone(player)
+            # (x, y) = self.find_square_in_player_trail(player)
+            # self.fill_zone(player, x, y)
         else:
             # TODO convert only the Trail
             pass
 
-    def find_square_in_player_trail(self, player):
-        (x, y) = self.find_approximative_center_of_trail(player)
-        if self.is_square_in_player_trail(player, x, y):
-            print("Square is in trail")
-            return (x, y)
-        else:
-            print("Square is not in trail")
-            # TODO find next intersection and cross it to be inside trail
+    def is_trail_close_path(self, player):
+        # TODO
+        return True
 
-    def is_square_in_player_trail(self, player, pos_x, pos_y):
+    # This method is not really optimized but should work
+    def basic_fill_zone(self, player):
+        # Optimize by taking only bounding box?
+        squares_to_be_filled = []
+        for x in range(len(self.squares)):
+            for y in range(len(self.squares[x])):
+                if self.is_square_inside_player_trail(player, x, y):
+                    squares_to_be_filled.append(self.squares[x][y])
+        for square in squares_to_be_filled:
+            square.is_owned = True
+            square.owner = player
+
+    def is_square_inside_player_trail(self, player, pos_x, pos_y):
         counter = self.count_intersection_from_square(player, pos_x, pos_y)
         return counter % 2 == 1
 
@@ -87,62 +94,32 @@ class Map:
                     counter += 1
 
             if square.is_owned and square.owner is player:
-                if self.is_connected_to_trail(player, x, y):
+                if self.is_square_connected_to_trail(player, x, y):
                     counter += 1
         return counter
 
-    def is_connected_to_trail(self, player, pos_x, pos_y):
-        # TODO BFS to say if the trail is connected or not
+    def is_square_connected_to_trail(self, player, pos_x, pos_y):
+        # TODO BFS to say if the trail is connected to a square or not
         return True
 
-    def find_approximative_center_of_trail(self, player):
-        counter = 0
-        add_x = 0
-        add_y = 0
-        for y in range(self.height):
-            for x in range(self.width):
-                square = self.squares[x][y]
-                if square.has_trail and square.trail_owner is player:
-                    counter += 1
-                    add_x += x
-                    add_y += y
-        return (round(add_x / counter), round(add_y / counter))
+    # def find_square_in_player_trail(self, player):
+    #    (x, y) = self.find_approximative_center_of_trail(player)
+    #    if self.is_square_inside_player_trail(player, x, y):
+    #        print("Square is in trail")
+    #        return (x, y)
+    #    else:
+    #        print("Square is not in trail")
+    #        # TODO find next intersection and cross it to be inside trail
 
-    def is_trail_close_path(self, player):
-        # TODO
-        return True
-
-    def fill_zone(self, player, pos_x, pos_y):
-        isLeftFree = True
-        isRightFree = True
-        x = pos_x
-        y = pos_y
-        # Scan line on the left side
-        while isLeftFree and x >= 0:
-            square = self.squares[x][y]
-            print("isLeftFree", x, y, player.pos_x, player.pos_y)
-            if square.trail_owner is not player:
-                self.fill_square(player, x, y)
-                x = x - 1
-            else:
-                isLeftFree = False
-        most_left_x = x
-        x = pos_x + 1
-        # Scan line on the right side
-        while isRightFree and x < self.width:
-            square = self.squares[x][y]
-            if square.trail_owner is not player:
-                self.fill_square(player, x, y)
-                x = x + 1
-            else:
-                isRightFree = False
-        most_right_x = x
-
-        # loop on line below and line above from min and max,
-        # taking care of walls and if there is some,
-        # cut in multiple line that will be called individually
-        # TODO find a way to make it recursive or loop
-
-    def fill_square(self, player, x, y):
-        self.squares[x][y].is_owned = True
-        self.squares[x][y].owner = player
+    # def find_approximative_center_of_trail(self, player):
+    #     counter = 0
+    #     add_x = 0
+    #     add_y = 0
+    #     for y in range(self.height):
+    #         for x in range(self.width):
+    #             square = self.squares[x][y]
+    #             if square.has_trail and square.trail_owner is player:
+    #                 counter += 1
+    #                 add_x += x
+    #                 add_y += y
+    #     return (round(add_x / counter), round(add_y / counter))
