@@ -1,5 +1,4 @@
 from square import Square
-from squareState import SquareState
 from trail_direction import TrailDirection
 
 
@@ -11,7 +10,7 @@ class Map:
         for x in range(width):
             self.squares.append([])
             for y in range(height):
-                self.squares[x].append(Square(SquareState.NEUTRAL))
+                self.squares[x].append(Square())
 
     def __str__(self):
         asciiMap = ""
@@ -32,11 +31,11 @@ class Map:
 
     def update(self, player):
         square = self.squares[player.prev_pos_x][player.prev_pos_y]
-        if square.state is SquareState.OWNED and square.owner is player:
+        if square.is_owned and square.owner is player:
             pass
         else:
             self.squares[player.prev_pos_x][player.prev_pos_y] = Square(
-                SquareState.TRAIL, player
+                square.owner, player
             )
 
     def remove_player_trail(self, player):
@@ -44,9 +43,9 @@ class Map:
         for y in range(self.height):
             for x in range(self.width):
                 square = self.squares[x][y]
-                if square.state is SquareState.TRAIL and square.owner is player:
-                    self.squares[x][y].state = SquareState.NEUTRAL
-                    self.squares[x][y].owner = None
+                if square.has_trail and square.trail_owner is player:
+                    self.squares[x][y].has_trail = False
+                    self.squares[x][y].trail_owner = None
 
     def convert_owned_zone(self, player):
         # TODO Convert to owned zone
@@ -78,7 +77,7 @@ class Map:
         for x in range(pos_x, self.width):
             square = self.squares[x][y]
 
-            if square.state is SquareState.TRAIL and square.owner is player:
+            if square.has_trail and square.trail_owner is player:
                 direction = square.trail_direction
                 if (
                     direction is TrailDirection.VERTICAL
@@ -87,7 +86,7 @@ class Map:
                 ):
                     counter += 1
 
-            if square.state is SquareState.OWNED and square.owner is player:
+            if square.is_owned and square.owner is player:
                 if self.is_connected_to_trail(player, x, y):
                     counter += 1
         return counter
@@ -103,7 +102,7 @@ class Map:
         for y in range(self.height):
             for x in range(self.width):
                 square = self.squares[x][y]
-                if square.state is SquareState.TRAIL and square.owner is player:
+                if square.has_trail and square.trail_owner is player:
                     counter += 1
                     add_x += x
                     add_y += y
@@ -122,7 +121,7 @@ class Map:
         while isLeftFree and x >= 0:
             square = self.squares[x][y]
             print("isLeftFree", x, y, player.pos_x, player.pos_y)
-            if square.owner is not player:
+            if square.trail_owner is not player:
                 self.fill_square(player, x, y)
                 x = x - 1
             else:
@@ -132,7 +131,7 @@ class Map:
         # Scan line on the right side
         while isRightFree and x < self.width:
             square = self.squares[x][y]
-            if square.owner is not player:
+            if square.trail_owner is not player:
                 self.fill_square(player, x, y)
                 x = x + 1
             else:
@@ -145,5 +144,5 @@ class Map:
         # TODO find a way to make it recursive or loop
 
     def fill_square(self, player, x, y):
-        self.squares[x][y].state = SquareState.OWNED
+        self.squares[x][y].is_owned = True
         self.squares[x][y].owner = player

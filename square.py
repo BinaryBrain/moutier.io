@@ -1,36 +1,39 @@
 import constants
-from squareState import SquareState
 from direction import Direction
 from trail_direction import TrailDirection
 
 
 class Square:
-    def __init__(self, state, owner=None):
-        self.state = state
+    def __init__(self, owner=None, trail_owner=None):
         self.owner = owner
-        if self.state is SquareState.TRAIL:
-            self.trail_direction = self.get_trail_direction(self.owner)
+        self.trail_owner = trail_owner
+        self.is_owned = owner is not None
+        self.has_trail = trail_owner is not None
+
+        if self.has_trail:
+            self.trail_direction = self.get_trail_direction(self.trail_owner)
         else:
             self.trail_direction = None
 
     def __str__(self):
-        if self.state is SquareState.NEUTRAL:
-            return constants.EMPTY_SQUARE
-        elif self.state is SquareState.TRAIL:
+        if self.has_trail:
             if self.trail_direction is TrailDirection.HORIZONTAL:
-                return self.owner.color + constants.TRAIL_HORIZONTAL
+                return self.trail_owner.color + constants.TRAIL_HORIZONTAL
             elif self.trail_direction is TrailDirection.VERTICAL:
-                return self.owner.color + constants.TRAIL_VERTICAL
+                return self.trail_owner.color + constants.TRAIL_VERTICAL
             elif self.trail_direction is TrailDirection.LEFT_DOWN:
-                return self.owner.color + constants.TRAIL_LEFT_DOWN
+                return self.trail_owner.color + constants.TRAIL_LEFT_DOWN
             elif self.trail_direction is TrailDirection.LEFT_UP:
-                return self.owner.color + constants.TRAIL_LEFT_UP
+                return self.trail_owner.color + constants.TRAIL_LEFT_UP
             elif self.trail_direction is TrailDirection.RIGHT_DOWN:
-                return self.owner.color + constants.TRAIL_RIGHT_DOWN
+                return self.trail_owner.color + constants.TRAIL_RIGHT_DOWN
             elif self.trail_direction is TrailDirection.RIGHT_UP:
-                return self.owner.color + constants.TRAIL_RIGHT_UP
-        elif self.state is SquareState.OWNED:
+                return self.trail_owner.color + constants.TRAIL_RIGHT_UP
+        # TODO Make this condition an if and have it has background color
+        elif self.is_owned:
             return self.owner.color + constants.FULL_BLOCK
+        else:
+            return constants.EMPTY_SQUARE
 
     def get_trail_direction(self, player):
         pl = player.prev_direction is Direction.LEFT
