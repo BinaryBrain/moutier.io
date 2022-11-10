@@ -35,9 +35,12 @@ class Map:
         if square.state is SquareState.OWNED and square.owner is player:
             pass
         else:
-            self.squares[player.prev_pos_x][player.prev_pos_y] = Square(SquareState.TRAIL, player)
+            self.squares[player.prev_pos_x][player.prev_pos_y] = Square(
+                SquareState.TRAIL, player
+            )
 
     def remove_player_trail(self, player):
+        # This could be optimized by storing trails as a list of squares in Player
         for y in range(self.height):
             for x in range(self.width):
                 square = self.squares[x][y]
@@ -46,9 +49,12 @@ class Map:
                     self.squares[x][y].owner = None
 
     def convert_owned_zone(self, player):
+        # TODO Convert to owned zone
+        # Optimize by taking only bounding box?
+        # Check if other players have at least one owned square or kill them
         if self.is_trail_close_path(player):
             (x, y) = self.find_square_in_player_trail(player)
-            # TODO Paint the inside of the zone
+            self.fill_zone(player, x, y)
         else:
             # TODO convert only the Trail
             pass
@@ -56,8 +62,6 @@ class Map:
     def find_square_in_player_trail(self, player):
         (x, y) = self.find_approximative_center_of_trail(player)
         if self.is_square_in_player_trail(player, x, y):
-            self.squares[x][y].state = SquareState.OWNED
-            self.squares[x][y].owner = player
             print("Square is in trail")
             return (x, y)
         else:
@@ -76,9 +80,11 @@ class Map:
 
             if square.state is SquareState.TRAIL and square.owner is player:
                 direction = square.trail_direction
-                if (direction is TrailDirection.VERTICAL or
-                        direction is TrailDirection.LEFT_UP or
-                        direction is TrailDirection.RIGHT_UP):
+                if (
+                    direction is TrailDirection.VERTICAL
+                    or direction is TrailDirection.LEFT_UP
+                    or direction is TrailDirection.RIGHT_UP
+                ):
                     counter += 1
 
             if square.state is SquareState.OWNED and square.owner is player:
@@ -107,6 +113,37 @@ class Map:
         # TODO
         return True
 
+    def fill_zone(self, player, pos_x, pos_y):
+        isLeftFree = True
+        isRightFree = True
+        x = pos_x
+        y = pos_y
+        # Scan line on the left side
+        while isLeftFree and x >= 0:
+            square = self.squares[x][y]
+            print("isLeftFree", x, y, player.pos_x, player.pos_y)
+            if square.owner is not player:
+                self.fill_square(player, x, y)
+                x = x - 1
+            else:
+                isLeftFree = False
+        most_left_x = x
+        x = pos_x + 1
+        # Scan line on the right side
+        while isRightFree and x < self.width:
+            square = self.squares[x][y]
+            if square.owner is not player:
+                self.fill_square(player, x, y)
+                x = x + 1
+            else:
+                isRightFree = False
+        most_right_x = x
 
-    def BFS(self, condition, pos_x, pos_y):
-        pass
+        # loop on line below and line above from min and max,
+        # taking care of walls and if there is some,
+        # cut in multiple line that will be called individually
+        # TODO find a way to make it recursive or loop
+
+    def fill_square(self, player, x, y):
+        self.squares[x][y].state = SquareState.OWNED
+        self.squares[x][y].owner = player
