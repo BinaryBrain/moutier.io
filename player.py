@@ -1,6 +1,7 @@
 from direction import Direction
 import constants
 
+
 class Player:
     def __init__(self, conn, name, symbol, color):
         self.conn = conn
@@ -15,6 +16,8 @@ class Player:
         self.direction = Direction.STOP
         self.has_trail = False
         self.alive = True
+        self.trail_start = None
+        self.trail_end = None
 
     def __str__(self):
         if self.direction is Direction.UP:

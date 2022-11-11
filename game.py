@@ -44,4 +44,4 @@ class Game:
             player.pos_y = 1
             for x in range(3):
                 for y in range(3):
-                    self.map.squares[x][y] = Square(player)
+                    self.map.squares[x][y] = Square(x, y, player)

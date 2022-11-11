@@ -18,12 +18,14 @@ def check_kill(game, player, square):
 
 def check_conquest(game, player, square):
     if player.has_trail and square.is_owned and square.owner is player:
+        player.trail_end = square
         game.map.convert_owned_zone(player)
-        player.has_trail = False
         game.map.remove_player_trail(player)
         pass
 
 
 def check_new_trail(game, player, square):
     if not square.is_owned or square.owner is not player:
-        player.has_trail = True
+        if not player.has_trail:
+            player.has_trail = True
+            player.trail_start = game.map.squares[player.prev_pos_x][player.prev_pos_y]

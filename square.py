@@ -4,11 +4,13 @@ from trail_direction import TrailDirection
 
 
 class Square:
-    def __init__(self, owner=None, trail_owner=None):
+    def __init__(self, pos_x, pos_y, owner=None, trail_owner=None):
         self.owner = owner
         self.trail_owner = trail_owner
         self.is_owned = owner is not None
         self.has_trail = trail_owner is not None
+        self.pos_x = pos_x
+        self.pos_y = pos_y
 
         if self.has_trail:
             self.trail_direction = self.get_trail_direction(self.trail_owner)
