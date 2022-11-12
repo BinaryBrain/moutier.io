@@ -32,7 +32,7 @@ class Server:
         player = Player(
             conn,
             "BinaryBrain",
-            Color[usable_colors[len(self.players) % len(usable_colors)]],
+            usable_colors[len(self.players) % len(usable_colors)],
         )
         self.players.add(player)
         self.set_mode(conn)

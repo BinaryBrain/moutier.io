@@ -20,15 +20,15 @@ class Player:
 
     def __str__(self):
         if self.direction is Direction.UP:
-            return self.color + constants.PLAYER_UP
+            return constants.PLAYER_UP
         elif self.direction is Direction.DOWN:
-            return self.color + constants.PLAYER_DOWN
+            return constants.PLAYER_DOWN
         elif self.direction is Direction.LEFT:
-            return self.color + constants.PLAYER_LEFT
+            return constants.PLAYER_LEFT
         elif self.direction is Direction.RIGHT:
-            return self.color + constants.PLAYER_RIGHT
+            return constants.PLAYER_RIGHT
         else:
-            return self.color + constants.PLAYER_STOP
+            return constants.PLAYER_STOP
 
     def define_direction(self, direction):
         if self.direction is not Direction.STOP:

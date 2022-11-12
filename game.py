@@ -3,6 +3,7 @@ import asyncio
 import constants
 import collisions
 from map import Map
+from color import Color
 from screen import Screen
 from trail_direction import TrailDirection
 from direction import Direction
@@ -35,7 +36,12 @@ class Game:
     def draw(self):
         self.screen.draw(self.map.to_lines(), 0, 0)
         for player in self.server.players:
-            self.screen.draw([[str(player)]], player.pos_x, player.pos_y)
+            s = self.map.squares[player.pos_x][player.pos_y]
+            if s.is_owned and s.owner is player:
+                color = s.get_background_color() + Color["BLACK"]
+            else:
+                color = s.get_background_color() + Color[player.color]
+            self.screen.draw([[color + str(player)]], player.pos_x, player.pos_y)
         self.sendScreen()
 
     def sendScreen(self):

@@ -1,4 +1,5 @@
 import constants
+from color import Color, BackgroundColor
 from direction import Direction
 from trail_direction import TrailDirection
 
@@ -18,24 +19,36 @@ class Square:
             self.trail_direction = None
 
     def __str__(self):
+        color = self.get_color()
         if self.has_trail:
             if self.trail_direction is TrailDirection.HORIZONTAL:
-                return self.trail_owner.color + constants.TRAIL_HORIZONTAL
+                return color + constants.TRAIL_HORIZONTAL
             elif self.trail_direction is TrailDirection.VERTICAL:
-                return self.trail_owner.color + constants.TRAIL_VERTICAL
+                return color + constants.TRAIL_VERTICAL
             elif self.trail_direction is TrailDirection.LEFT_DOWN:
-                return self.trail_owner.color + constants.TRAIL_LEFT_DOWN
+                return color + constants.TRAIL_LEFT_DOWN
             elif self.trail_direction is TrailDirection.LEFT_UP:
-                return self.trail_owner.color + constants.TRAIL_LEFT_UP
+                return color + constants.TRAIL_LEFT_UP
             elif self.trail_direction is TrailDirection.RIGHT_DOWN:
-                return self.trail_owner.color + constants.TRAIL_RIGHT_DOWN
+                return color + constants.TRAIL_RIGHT_DOWN
             elif self.trail_direction is TrailDirection.RIGHT_UP:
-                return self.trail_owner.color + constants.TRAIL_RIGHT_UP
-        # TODO Make this condition an if and have it has background color
+                return color + constants.TRAIL_RIGHT_UP
         elif self.is_owned:
-            return self.owner.color + constants.FULL_BLOCK
+            return color + constants.EMPTY_SQUARE
         else:
-            return constants.EMPTY_SQUARE
+            return color + constants.EMPTY_SQUARE
+
+    def get_color(self):
+        color = self.get_background_color()
+        if self.has_trail:
+            color += Color[self.trail_owner.color]
+        return color
+
+    def get_background_color(self):
+        if self.is_owned:
+            return BackgroundColor[self.owner.color]
+        else:
+            return BackgroundColor["BLACK"]
 
     def get_trail_direction(self, player):
         pl = player.prev_direction is Direction.LEFT
