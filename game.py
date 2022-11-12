@@ -4,7 +4,6 @@ import constants
 import collisions
 from map import Map
 from screen import Screen
-from square import Square
 from trail_direction import TrailDirection
 from direction import Direction
 from heapq import heapify, heappush
@@ -14,9 +13,9 @@ from math import sqrt
 class Game:
     def __init__(self, server):
         self.fps = constants.FPS
-        self.map = Map(40, 40)
+        self.map = Map(60, 30)
         self.server = server
-        self.screen = Screen(40, 40)
+        self.screen = Screen(60, 30)
         self.t = 0
 
     async def loop(self):
