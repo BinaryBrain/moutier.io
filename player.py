@@ -3,10 +3,9 @@ import constants
 
 
 class Player:
-    def __init__(self, conn, name, symbol, color):
+    def __init__(self, conn, name, color):
         self.conn = conn
         self.name = name
-        self.symbol = symbol
         self.color = color
         self.prev_pos_x = 0
         self.prev_pos_y = 0

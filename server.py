@@ -32,7 +32,6 @@ class Server:
         player = Player(
             conn,
             "BinaryBrain",
-            constants.FULL_BLOCK,
             Color[usable_colors[len(self.players) % len(usable_colors)]],
         )
         self.players.add(player)
