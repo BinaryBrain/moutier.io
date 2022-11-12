@@ -96,6 +96,9 @@ class Game:
     def convert_squares_to_path(self, player, squares):
         path = {}
         for current_square in squares:
+            if current_square.has_trail and current_square.trail_owner is player:
+                path[current_square] = current_square.trail_direction
+                continue
 
             def condition_func(s):
                 return (s[0].is_owned and s[0].owner is player) or (
@@ -108,6 +111,10 @@ class Game:
                     self.get_neighbors(current_square, condition_func),
                 )
             )
+
+            # In some weird edge case, like player go out of the zone and back again
+            if len(neighbors) < 2:
+                continue
 
             has_l = (
                 neighbors[0][1] is Direction.LEFT or neighbors[1][1] is Direction.LEFT
@@ -136,7 +143,10 @@ class Game:
         return path
 
     def is_square_inside_player_trail(self, path_squares, candidate):
-        counter = 0
+        # Two counters to double check my code :D
+        # (I couldn't find the exact edge case)
+        counter1 = 0
+        counter2 = 0
         y = candidate.pos_y
         for x in range(candidate.pos_x, self.map.width):
             square = self.map.squares[x][y]
@@ -149,9 +159,16 @@ class Game:
                 or direction is TrailDirection.LEFT_UP
                 or direction is TrailDirection.RIGHT_UP
             ):
-                counter += 1
+                counter1 += 1
 
-        return counter % 2 == 1
+            if (
+                direction is TrailDirection.VERTICAL
+                or direction is TrailDirection.LEFT_DOWN
+                or direction is TrailDirection.RIGHT_DOWN
+            ):
+                counter2 += 1
+
+        return counter1 % 2 == 1 and counter2 % 2 == 1
 
     def a_star(self, start_square, end_square, player):
         discovered_squares = []
