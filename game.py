@@ -16,8 +16,9 @@ class Game:
         self.fps = constants.FPS
         self.map = Map(60, 30)
         self.server = server
-        self.screen = Screen(60, 30)
+        self.screen = Screen(self.map)
         self.t = 0
+        self.timer = 999
 
     async def loop(self):
         while True:
@@ -28,20 +29,28 @@ class Game:
                 player.define_direction(player.direction)
                 collisions.check_collisions(self, player)
 
+            self.timer -= 1
+
+            if self.timer <= 0:
+                self.timer = 0
+                self.end_game
+
             self.draw()
             end_timer = time.time()
             await asyncio.sleep(1 / constants.FPS - (end_timer - start_timer))
             self.t = self.t + 1
 
     def draw(self):
-        self.screen.draw(self.map.to_lines(), 0, 0)
+        self.screen.draw_frame()
+        self.screen.draw_timer(self.timer)
+        self.screen.draw_on_map(self.map.to_lines(), 0, 0)
         for player in self.server.players:
             s = self.map.squares[player.pos_x][player.pos_y]
             if s.is_owned and s.owner is player:
                 color = s.get_background_color() + Color["BLACK"]
             else:
                 color = s.get_background_color() + Color[player.color]
-            self.screen.draw([[color + str(player)]], player.pos_x, player.pos_y)
+            self.screen.draw_on_map([[color + str(player)]], player.pos_x, player.pos_y)
         self.sendScreen()
 
     def sendScreen(self):
@@ -261,3 +270,7 @@ class Game:
         neighbors = filter(condition_func, neighbors)
 
         return list(neighbors)
+
+    def end_game(self):
+        # TODO
+        return

@@ -22,6 +22,17 @@ TRAIL_LEFT_UP =    "\u251B"  # ┛
 TRAIL_RIGHT_DOWN = "\u250F"  # ┏
 TRAIL_RIGHT_UP =   "\u2517"  # ┗
 
+FRAME_HORIZONTAL    = "\u2550" # ═
+FRAME_VERTICAL      = "\u2551" # ║
+FRAME_TOP_LEFT      = "\u2554" # ╔
+FRAME_TOP_RIGHT     = "\u2557" # ╗
+FRAME_BOTTOM_LEFT   = "\u255A" # ╚
+FRAME_BOTTOM_RIGHT  = "\u255D" # ╝
+FRAME_LEFT_T        = "\u2563" # ╣
+FRAME_RIGHT_T       = "\u2560" # ╠
+FRAME_TOP_T         = "\u2566" # ╦
+FRAME_BOTTOM_T      = "\u2569" # ╩
+
 EMPTY_SQUARE = " "
 
 SPAWN_MARGINS = 2
