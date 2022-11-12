@@ -50,8 +50,9 @@ class Game:
     def initialize_game(self):
         for player in self.server.players:
             self.map.make_random_spawn(player)
+        self.compute_scores()
 
-    def kill_player(self, dead_player, killer):
+    def kill_player(self, dead_player, killer=None):
         dead_player.kill()
         self.remove_player_trail(dead_player)
         for x in range(len(self.map.squares)):
@@ -59,6 +60,7 @@ class Game:
                 s = self.map.squares[x][y]
                 if s.is_owned and s.owner is dead_player:
                     s.owner = killer
+        self.map.make_random_spawn(dead_player)
 
     def remove_player_trail(self, player):
         # This could be optimized by storing trails as a list of squares in Player
@@ -78,21 +80,18 @@ class Game:
             self.convert_trail_to_owned(player)
 
         # Check if other players have at least one owned square or kill them
-        self.check_players_have_zone(player)
+        self.compute_scores(player)
 
-    def check_players_have_zone(self, killer):
-        nb_zone_of_player = {}
-        for candidate in self.server.players:
-            nb_zone_of_player[candidate] = 0
-        for x in range(len(self.map.squares)):
-            for y in range(len(self.map.squares[x])):
-                s = self.map.squares[x][y]
-                if s.is_owned:
-                    nb_zone_of_player[s.owner] += 1
-                if all(nb_zone_of_player[c] > 0 for c in nb_zone_of_player):
-                    return
-        for player in filter(lambda p: nb_zone_of_player[p] == 0, nb_zone_of_player):
-            self.kill_player(player, killer)
+    def compute_scores(self, potential_killer=None):
+        for p in self.server.players:
+            p.score = 0
+            for x in range(len(self.map.squares)):
+                for y in range(len(self.map.squares[x])):
+                    s = self.map.squares[x][y]
+                    if s.is_owned:
+                        p.score += 1
+            if p.score == 0:
+                self.kill_player(p, potential_killer)
 
     def convert_trail_to_owned(self, player):
         player.has_trail = False

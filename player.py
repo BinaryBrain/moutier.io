@@ -17,6 +17,7 @@ class Player:
         self.alive = True
         self.trail_start = None
         self.trail_end = None
+        self.score = 0
 
     def __str__(self):
         if self.direction is Direction.UP:
