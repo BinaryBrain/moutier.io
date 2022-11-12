@@ -13,14 +13,14 @@ def check_kill(game, player, square):
         if player is not square.trail_owner or player.direction is not Direction.STOP:
             dead_player = square.trail_owner
             dead_player.kill()
-            game.map.remove_player_trail(dead_player)
+            game.remove_player_trail(dead_player)
 
 
 def check_conquest(game, player, square):
     if player.has_trail and square.is_owned and square.owner is player:
         player.trail_end = square
-        game.map.convert_owned_zone(player)
-        game.map.remove_player_trail(player)
+        game.convert_owned_zone(player)
+        game.remove_player_trail(player)
         pass
 
 
