@@ -1,4 +1,7 @@
+from constants import SPAWN_MARGINS
+import random
 from square import Square
+from direction import Direction
 
 
 class Map:
@@ -45,3 +48,36 @@ class Map:
                 if square.has_trail and square.trail_owner is player:
                     trail.append(square)
         return trail
+
+    def make_random_spawn(self, player):
+        if self.width >= self.height:
+            ratio = self.height / self.width
+            if random.random() > ratio:
+                pos = random.randint(SPAWN_MARGINS, self.width - SPAWN_MARGINS - 1)
+                if random.randint(0, 1) == 0:
+                    side = Direction.UP
+                else:
+                    side = Direction.DOWN
+            else:
+                pos = random.randint(SPAWN_MARGINS, self.height - SPAWN_MARGINS - 1)
+                if random.randint(0, 1) == 0:
+                    side = Direction.LEFT
+                else:
+                    side = Direction.RIGHT
+
+        if side is Direction.UP:
+            spawn = self.squares[pos][SPAWN_MARGINS]
+        elif side is Direction.DOWN:
+            spawn = self.squares[pos][self.height - SPAWN_MARGINS - 1]
+        elif side is Direction.LEFT:
+            spawn = self.squares[SPAWN_MARGINS][pos]
+        else:
+            spawn = self.squares[self.width - SPAWN_MARGINS - 1][pos]
+
+        player.pos_x = spawn.pos_x
+        player.pos_y = spawn.pos_y
+        for x in range(spawn.pos_x - SPAWN_MARGINS, spawn.pos_x + SPAWN_MARGINS + 1):
+            for y in range(
+                spawn.pos_y - SPAWN_MARGINS, spawn.pos_y + SPAWN_MARGINS + 1
+            ):
+                self.squares[x][y] = Square(x, y, player)

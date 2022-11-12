@@ -23,3 +23,5 @@ TRAIL_RIGHT_DOWN = "\u250F"  # ┏
 TRAIL_RIGHT_UP =   "\u2517"  # ┗
 
 EMPTY_SQUARE = " "
+
+SPAWN_MARGINS = 2

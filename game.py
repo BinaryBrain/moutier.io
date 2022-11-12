@@ -43,12 +43,8 @@ class Game:
         self.server.broadcast(self.screen.getCurrentScreen())
 
     def initialize_game(self):
-        for i, player in enumerate(self.server.players):
-            player.pos_x = 1
-            player.pos_y = 1
-            for x in range(3):
-                for y in range(3):
-                    self.map.squares[x][y] = Square(x, y, player)
+        for player in self.server.players:
+            self.map.make_random_spawn(player)
 
     def remove_player_trail(self, player):
         # This could be optimized by storing trails as a list of squares in Player
