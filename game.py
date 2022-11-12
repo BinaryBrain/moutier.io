@@ -6,6 +6,7 @@ from map import Map
 from screen import Screen
 from square import Square
 from trail_direction import TrailDirection
+from direction import Direction
 from heapq import heapify, heappush
 from math import sqrt
 
@@ -52,81 +53,105 @@ class Game:
     def remove_player_trail(self, player):
         # This could be optimized by storing trails as a list of squares in Player
         player.has_trail = False
-        for x in range(self.map.width):
-            for y in range(self.map.height):
-                square = self.map.squares[x][y]
-                if square.has_trail and square.trail_owner is player:
-                    self.map.squares[x][y].has_trail = False
-                    self.map.squares[x][y].trail_owner = None
+        for s in self.map.get_player_trail(player):
+            s.has_trail = False
+            s.trail_owner = None
 
     def convert_owned_zone(self, player):
         # TODO Convert to owned zone
         # Check if other players have at least one owned square or kill them
         shortest_owned_path = self.a_star(player.trail_start, player.trail_end, player)
         if shortest_owned_path:
-            # self.basic_fill_zone(player, shortest_owned_path)
+            squares = shortest_owned_path + self.map.get_player_trail(player)
+            path_squares = self.convert_squares_to_path(player, squares)
+            self.basic_fill_zone(player, path_squares)
             # (x, y) = self.find_square_in_player_trail(player)
             # self.fill_zone(player, x, y)
-            self.is_trail_close_path(player)
+            self.convert_trail_to_owned(player)
         else:
-            self.is_trail_close_path(player)
+            self.convert_trail_to_owned(player)
             print("Zone is not closed")
 
-    def is_trail_close_path(self, player):
-        for x in range(self.map.width):
-            for y in range(self.map.height):
-                if (
-                    self.map.squares[x][y].has_trail
-                    and self.map.squares[x][y].trail_owner is player
-                ):
-                    self.map.squares[x][y].has_trail = False
-                    self.map.squares[x][y].trail_owner = None
-                    self.map.squares[x][y].is_owned = True
-                    self.map.squares[x][y].owner = player
+    def convert_trail_to_owned(self, player):
+        player.has_trail = False
+        for s in self.map.get_player_trail(player):
+            s.has_trail = False
+            s.trail_owner = None
+            s.is_owned = True
+            s.owner = player
 
     # This method is not really optimized but should work
-    def basic_fill_zone(self, player, shortest_owned_path):
+    def basic_fill_zone(self, player, path_squares):
         # Optimize by taking only bounding box?
         squares_to_be_filled = []
         for x in range(len(self.map.squares)):
             for y in range(len(self.map.squares[x])):
-                if self.is_square_inside_player_trail(
-                    player, shortest_owned_path, x, y
-                ):
-                    squares_to_be_filled.append(self.map.squares[x][y])
+                s = self.map.squares[x][y]
+                if self.is_square_inside_player_trail(path_squares, s):
+                    squares_to_be_filled.append(s)
         for square in squares_to_be_filled:
             square.is_owned = True
             square.owner = player
 
-    def is_square_inside_player_trail(self, player, shortest_owned_path, pos_x, pos_y):
-        # Because of owned block, we may need to measure whether
-        # the area A is smaller than B to make A the inside.
-        # Otherwise, could we count the number of turns in each direction?
-        # Third option: we could do an A* to find the path between
-        # the entry point and the exit point to create a full loop.
-        counter = self.count_intersection_from_square(
-            player, shortest_owned_path, pos_x, pos_y
-        )
-        return counter % 2 == 1
+    def convert_squares_to_path(self, player, squares):
+        path = {}
+        for current_square in squares:
 
-    def count_intersection_from_square(self, player, shortest_owned_path, pos_x, pos_y):
+            def condition_func(s):
+                return (s[0].is_owned and s[0].owner is player) or (
+                    s[0].has_trail and s[0].trail_owner is player
+                )
+
+            neighbors = list(
+                filter(
+                    lambda n: n[0] in squares,
+                    self.get_neighbors(current_square, condition_func),
+                )
+            )
+
+            has_l = (
+                neighbors[0][1] is Direction.LEFT or neighbors[1][1] is Direction.LEFT
+            )
+            has_r = (
+                neighbors[0][1] is Direction.RIGHT or neighbors[1][1] is Direction.RIGHT
+            )
+            has_u = neighbors[0][1] is Direction.UP or neighbors[1][1] is Direction.UP
+            has_d = (
+                neighbors[0][1] is Direction.DOWN or neighbors[1][1] is Direction.DOWN
+            )
+
+            if has_l and has_u:
+                path[current_square] = TrailDirection.LEFT_UP
+            elif has_l and has_d:
+                path[current_square] = TrailDirection.LEFT_DOWN
+            elif has_r and has_u:
+                path[current_square] = TrailDirection.RIGHT_UP
+            elif has_r and has_d:
+                path[current_square] = TrailDirection.RIGHT_DOWN
+            elif has_l and has_r:
+                path[current_square] = TrailDirection.HORIZONTAL
+            elif has_u and has_d:
+                path[current_square] = TrailDirection.VERTICAL
+
+        return path
+
+    def is_square_inside_player_trail(self, path_squares, candidate):
         counter = 0
-        y = pos_y
-        for x in range(pos_x, self.map.width):
+        y = candidate.pos_y
+        for x in range(candidate.pos_x, self.map.width):
             square = self.map.squares[x][y]
+            if square not in path_squares:
+                continue
 
-            if square.has_trail and square.trail_owner is player:
-                direction = square.trail_direction
-                if (
-                    direction is TrailDirection.VERTICAL
-                    or direction is TrailDirection.LEFT_UP
-                    or direction is TrailDirection.RIGHT_UP
-                ):
-                    counter += 1
-
-            if square in shortest_owned_path:
+            direction = path_squares[square]
+            if (
+                direction is TrailDirection.VERTICAL
+                or direction is TrailDirection.LEFT_UP
+                or direction is TrailDirection.RIGHT_UP
+            ):
                 counter += 1
-        return counter
+
+        return counter % 2 == 1
 
     def a_star(self, start_square, end_square, player):
         discovered_squares = []
@@ -142,7 +167,12 @@ class Game:
                 return self.reconstruct_path(came_from, end_square)
 
             discovered_squares.remove(discovered_squares[0])
-            for neighbor in self.get_neighbors(current, player):
+
+            def condition_func(s):
+                return s[0].is_owned and s[0].owner is player
+
+            neighbors = self.get_neighbors(current, condition_func)
+            for neighbor, direction in neighbors:
                 tentative_cost_from_start = cost_from_start[current] + 1
                 if (
                     neighbor not in cost_from_start
@@ -177,45 +207,19 @@ class Game:
                 should_continue = False
         return path
 
-    def get_neighbors(self, square, player):
-        # check if it's a walkable square
+    def get_neighbors(self, square, condition_func):
         neighbors = []
         x = square.pos_x
         y = square.pos_y
         if x >= 1:
-            neighbors.append(self.map.squares[x - 1][y])
+            neighbors.append((self.map.squares[x - 1][y], Direction.LEFT))
         if x < self.map.width - 1:
-            neighbors.append(self.map.squares[x + 1][y])
+            neighbors.append((self.map.squares[x + 1][y], Direction.RIGHT))
         if y >= 1:
-            neighbors.append(self.map.squares[x][y - 1])
+            neighbors.append((self.map.squares[x][y - 1], Direction.UP))
         if y < self.map.height - 1:
-            neighbors.append(self.map.squares[x][y + 1])
+            neighbors.append((self.map.squares[x][y + 1], Direction.DOWN))
 
-        def filter_func(s):
-            return s.is_owned and s.owner is player
-
-        neighbors = filter(filter_func, neighbors)
+        neighbors = filter(condition_func, neighbors)
 
         return list(neighbors)
-
-    # def find_square_in_player_trail(self, player):
-    #    (x, y) = self.find_approximative_center_of_trail(player)
-    #    if self.is_square_inside_player_trail(player, x, y):
-    #        print("Square is in trail")
-    #        return (x, y)
-    #    else:
-    #        print("Square is not in trail")
-    #        # TODO find next intersection and cross it to be inside trail
-
-    # def find_approximative_center_of_trail(self, player):
-    #     counter = 0
-    #     add_x = 0
-    #     add_y = 0
-    #     for y in range(self.map.height):
-    #         for x in range(self.map.width):
-    #             square = self.map.squares[x][y]
-    #             if square.has_trail and square.trail_owner is player:
-    #                 counter += 1
-    #                 add_x += x
-    #                 add_y += y
-    #     return (round(add_x / counter), round(add_y / counter))

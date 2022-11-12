@@ -36,3 +36,12 @@ class Map:
             self.squares[player.prev_pos_x][player.prev_pos_y] = Square(
                 player.prev_pos_x, player.prev_pos_y, square.owner, player
             )
+
+    def get_player_trail(self, player):
+        trail = []
+        for x in range(self.width):
+            for y in range(self.height):
+                square = self.squares[x][y]
+                if square.has_trail and square.trail_owner is player:
+                    trail.append(square)
+        return trail
