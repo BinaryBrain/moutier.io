@@ -8,12 +8,11 @@ def check_collisions(game, player):
     check_new_trail(game, player, square)
 
 
-def check_kill(game, player, square):
+def check_kill(game, killer, square):
     if square.has_trail:
-        if player is not square.trail_owner or player.direction is not Direction.STOP:
+        if killer is not square.trail_owner or killer.direction is not Direction.STOP:
             dead_player = square.trail_owner
-            dead_player.kill()
-            game.remove_player_trail(dead_player)
+            game.kill_player(dead_player, killer)
 
 
 def check_conquest(game, player, square):

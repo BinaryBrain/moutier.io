@@ -51,6 +51,15 @@ class Game:
         for player in self.server.players:
             self.map.make_random_spawn(player)
 
+    def kill_player(self, dead_player, killer):
+        dead_player.kill()
+        self.remove_player_trail(dead_player)
+        for x in range(len(self.map.squares)):
+            for y in range(len(self.map.squares[x])):
+                s = self.map.squares[x][y]
+                if s.is_owned and s.owner is dead_player:
+                    s.owner = killer
+
     def remove_player_trail(self, player):
         # This could be optimized by storing trails as a list of squares in Player
         player.has_trail = False
@@ -59,19 +68,31 @@ class Game:
             s.trail_owner = None
 
     def convert_owned_zone(self, player):
-        # TODO Convert to owned zone
-        # Check if other players have at least one owned square or kill them
         shortest_owned_path = self.a_star(player.trail_start, player.trail_end, player)
         if shortest_owned_path:
             squares = shortest_owned_path + self.map.get_player_trail(player)
             path_squares = self.convert_squares_to_path(player, squares)
             self.basic_fill_zone(player, path_squares)
-            # (x, y) = self.find_square_in_player_trail(player)
-            # self.fill_zone(player, x, y)
             self.convert_trail_to_owned(player)
         else:
             self.convert_trail_to_owned(player)
-            print("Zone is not closed")
+
+        # Check if other players have at least one owned square or kill them
+        self.check_players_have_zone(player)
+
+    def check_players_have_zone(self, killer):
+        nb_zone_of_player = {}
+        for candidate in self.server.players:
+            nb_zone_of_player[candidate] = 0
+        for x in range(len(self.map.squares)):
+            for y in range(len(self.map.squares[x])):
+                s = self.map.squares[x][y]
+                if s.is_owned:
+                    nb_zone_of_player[s.owner] += 1
+                if all(nb_zone_of_player[c] > 0 for c in nb_zone_of_player):
+                    return
+        for player in filter(lambda p: nb_zone_of_player[p] == 0, nb_zone_of_player):
+            self.kill_player(player, killer)
 
     def convert_trail_to_owned(self, player):
         player.has_trail = False
