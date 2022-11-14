@@ -3,39 +3,46 @@ import asyncio
 import constants
 import collisions
 from map import Map
-from color import Color
+from color import Color, usable_colors
 from screen import Screen
 from trail_direction import TrailDirection
 from direction import Direction
 from heapq import heapify, heappush
 from math import sqrt
+from player import Player
+from client_state import ClientState
 
 
 class Game:
     def __init__(self, server):
+        self.is_running = False
         self.fps = constants.FPS
         self.map = Map(60, 30)
         self.server = server
         self.screen = Screen(self.map)
         self.t = 0
         self.timer = 999
+        self.players = set()
 
     async def loop(self):
         while True:
             start_timer = time.time()
-            for player in self.server.players:
-                player.move(self.map)
-                self.map.update(player)
-                player.define_direction(player.direction)
-                collisions.check_collisions(self, player)
 
-            self.timer -= 1
+            if self.is_running:
+                for player in self.players:
+                    player.move(self.map)
+                    self.map.update(player)
+                    player.define_direction(player.direction)
+                    collisions.check_collisions(self, player)
 
-            if self.timer <= 0:
-                self.timer = 0
-                self.end_game
+                self.timer -= 1
 
-            self.draw()
+                if self.timer <= 0:
+                    self.timer = 0
+                    self.end_game
+
+                self.draw()
+
             end_timer = time.time()
             await asyncio.sleep(1 / constants.FPS - (end_timer - start_timer))
             self.t = self.t + 1
@@ -44,7 +51,7 @@ class Game:
         self.screen.draw_frame()
         self.screen.draw_timer(self.timer)
         self.screen.draw_on_map(self.map.to_lines(), 0, 0)
-        for player in self.server.players:
+        for player in self.players:
             s = self.map.squares[player.pos_x][player.pos_y]
             if s.is_owned and s.owner is player:
                 color = s.get_background_color() + Color["BLACK"]
@@ -54,12 +61,36 @@ class Game:
         self.sendScreen()
 
     def sendScreen(self):
-        self.server.broadcast(self.screen.getCurrentScreen())
+        clients = map(lambda p: p.client, self.players)
+        self.server.broadcast(clients, self.screen.getCurrentScreen())
 
     def initialize_game(self):
-        for player in self.server.players:
-            self.map.make_random_spawn(player)
+        self.is_running = True
+
+    def add_player(self, client):
+        client.state = ClientState.IN_GAME
+        player = Player(
+            client,
+            usable_colors[len(self.players) % len(usable_colors)],
+        )
+        self.players.add(player)
+
+        self.map.make_random_spawn(player)
         self.compute_scores()
+
+        if not self.is_running and len(self.players) >= 2:
+            self.initialize_game()
+
+    def handle_input(self, client, key):
+        player = next(p for p in self.players if p.client == client)
+        if key == constants.KEY_UP and player.direction != Direction.DOWN:
+            player.define_direction(Direction.UP)
+        if key == constants.KEY_DOWN and player.direction != Direction.UP:
+            player.define_direction(Direction.DOWN)
+        if key == constants.KEY_LEFT and player.direction != Direction.RIGHT:
+            player.define_direction(Direction.LEFT)
+        if key == constants.KEY_RIGHT and player.direction != Direction.LEFT:
+            player.define_direction(Direction.RIGHT)
 
     def kill_player(self, dead_player, killer=None):
         dead_player.kill()
@@ -92,7 +123,7 @@ class Game:
         self.compute_scores(player)
 
     def compute_scores(self, potential_killer=None):
-        for p in self.server.players:
+        for p in self.players:
             p.score = 0
             for x in range(len(self.map.squares)):
                 for y in range(len(self.map.squares[x])):

@@ -3,10 +3,10 @@ import selectors
 import asyncio
 import constants
 
-from player import Player
+from client import Client
+from client_state import ClientState
 from game import Game
 from direction import Direction
-from color import Color, usable_colors
 
 HOST = ""
 PORT = 4848
@@ -22,70 +22,53 @@ class Server:
         self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-        self.players = set()
+        self.clients = set()
         self.game = Game(self)
 
     def accept_new_connection(self, soc, mask):
         conn, address = soc.accept()
-        print(f"New connection ({len(self.players) + 1}) from: {address[0]}")
+        print(f"New connection ({len(self.clients) + 1}) from: {address[0]}")
         conn.setblocking(False)
-        player = Player(
-            conn,
-            "BinaryBrain",
-            usable_colors[len(self.players) % len(usable_colors)],
-        )
-        self.players.add(player)
+        client = Client(conn)
+        self.clients.add(client)
+        self.game.add_player(client)
         self.set_mode(conn)
         self.set_client_echo(conn, True)
-        self.clear_screen(conn)
+        self.clear_screen(client)
         self.sel.register(conn, selectors.EVENT_READ, self.read_client_data)
-
-        if len(self.players) >= 1:
-            self.game.initialize_game()
 
     def read_client_data(self, conn, mask):
         data = conn.recv(1024)
-        player = next(p for p in self.players if p.conn == conn)
+        client = next(c for c in self.clients if c.conn == conn)
         if data:
-            if data == constants.KEY_UP and player.direction != Direction.DOWN:
-                player.define_direction(Direction.UP)
-            if data == constants.KEY_DOWN and player.direction != Direction.UP:
-                player.define_direction(Direction.DOWN)
-            if data == constants.KEY_LEFT and player.direction != Direction.RIGHT:
-                player.define_direction(Direction.LEFT)
-            if data == constants.KEY_RIGHT and player.direction != Direction.LEFT:
-                player.define_direction(Direction.RIGHT)
-
+            if client.state is ClientState.IN_GAME:
+                self.game.handle_input(client, data)
             try:
                 text = data.decode("utf-8").strip()
                 # else:
-                # broadcast(str + '\r\n')
+                # broadcast(self.self.clients, str + '\r\n')
             except UnicodeDecodeError:
                 print("Control character received", data)
         else:
             print("Good bye!")
             self.sel.unregister(conn)
-            self.players.remove(
-                next(p for p in self.players if p.conn == conn)
-            )  # remove player from list
+            self.clients.remove(
+                next(c for c in self.clients if c.conn == conn)
+            )  # remove client from list
             conn.close()
 
-    def send(self, conn, msg):
+    def send(self, client, msg):
         try:
-            conn.send(msg.encode("utf-8"))
+            client.conn.send(msg.encode("utf-8"))
         except BrokenPipeError:
             pass
 
-    def broadcast(self, msg):
-        for player in self.players:
-            self.send(player.conn, msg)
+    def broadcast(self, clients, msg):
+        for client in clients:
+            self.send(client, msg)
 
-    def broadcast_clear_screen(self):
-        for player in self.players:
-            self.clear_screen(player.conn)
-
-    def clear_screen(self, conn):
-        self.send(conn, constants.CLEAR_CHARACTER)
+    def clear_screen(self, client):
+        self.send(client, constants.CLEAR_CHARACTER)
 
     # Change the mode so that each character is sent without pressing ENTER
     def set_mode(self, conn):
