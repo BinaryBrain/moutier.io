@@ -100,7 +100,12 @@ class Game:
             for y in range(len(self.map.squares[x])):
                 s = self.map.squares[x][y]
                 if s.is_owned and s.owner is dead_player:
-                    s.owner = killer
+                    if killer is not dead_player:
+                        s.owner = killer
+                    else:
+                        # suicide
+                        s.is_owned = False
+                        s.owner = None
         self.map.make_random_spawn(dead_player)
         self.compute_scores(killer)
 
