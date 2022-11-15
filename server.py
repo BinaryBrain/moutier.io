@@ -97,7 +97,7 @@ class Server:
             for key, mask in events:
                 callback = key.data
                 callback(key.fileobj, mask)
-            await asyncio.sleep(1 / 5)  # TODO sync on FPS or something
+            await asyncio.sleep(1 / 100)
 
 
 try:
