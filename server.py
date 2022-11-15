@@ -6,7 +6,6 @@ import constants
 from client import Client
 from client_state import ClientState
 from game import Game
-from direction import Direction
 
 HOST = ""
 PORT = 4848
@@ -31,11 +30,15 @@ class Server:
         conn.setblocking(False)
         client = Client(conn)
         self.clients.add(client)
-        self.game.add_player(client)
-        self.set_mode(conn)
-        self.set_client_echo(conn, True)
         self.clear_screen(client)
         self.sel.register(conn, selectors.EVENT_READ, self.read_client_data)
+        self.send(client, "Please enter your name: ")
+
+    def set_name(self, client, name):
+        client.name = name
+        self.game.add_player(client)
+        self.set_line_mode(client.conn)
+        self.set_client_echo(client.conn, True)
 
     def read_client_data(self, conn, mask):
         data = conn.recv(1024)
@@ -44,9 +47,9 @@ class Server:
             if client.state is ClientState.IN_GAME:
                 self.game.handle_input(client, data)
             try:
-                text = data.decode("utf-8").strip()
-                # else:
-                # broadcast(self.self.clients, str + '\r\n')
+                if client.state is ClientState.WELCOME:
+                    name = data.decode("utf-8").strip()
+                    self.set_name(client, name)
             except UnicodeDecodeError:
                 print("Control character received", data)
         else:
@@ -71,7 +74,7 @@ class Server:
         self.send(client, constants.CLEAR_CHARACTER)
 
     # Change the mode so that each character is sent without pressing ENTER
-    def set_mode(self, conn):
+    def set_line_mode(self, conn):
         conn.send(b"\xff\xfd\x22")  # IAC DO LINEMODE
         conn.send(b"\xff\xfa\x22\x01\x00\xff\xf0")  # IAC SB LINEMODE MODE 0 IAC SE
 

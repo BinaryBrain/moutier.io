@@ -10,6 +10,8 @@ from direction import Direction
 from heapq import heapify, heappush
 from math import sqrt
 from player import Player
+from scores import Scores
+from panel import Panel
 from client_state import ClientState
 
 
@@ -18,11 +20,14 @@ class Game:
         self.is_running = False
         self.fps = constants.FPS
         self.map = Map(60, 30)
+        self.scores = Scores(20, 20)
         self.server = server
-        self.screen = Screen(self.map)
+        self.screen = Screen()
         self.t = 0
         self.timer = 999
         self.players = set()
+        self.map_panel = Panel(60, 30, 0, 0)
+        self.score_panel = Panel(20, 20, self.map_panel.width, 0)
 
     async def loop(self):
         while True:
@@ -39,7 +44,7 @@ class Game:
 
                 if self.timer <= 0:
                     self.timer = 0
-                    self.end_game
+                    self.end_game()
 
                 self.draw()
 
@@ -48,16 +53,12 @@ class Game:
             self.t = self.t + 1
 
     def draw(self):
-        self.screen.draw_frame()
+        self.screen.draw_in_panel(self.map_panel, self.map.to_lines(self.players))
+        max_score = self.map.width * self.map.height
+        self.screen.draw_in_panel(
+            self.score_panel, self.scores.to_lines(self.players, max_score)
+        )
         self.screen.draw_timer(self.timer)
-        self.screen.draw_on_map(self.map.to_lines(), 0, 0)
-        for player in self.players:
-            s = self.map.squares[player.pos_x][player.pos_y]
-            if s.is_owned and s.owner is player:
-                color = s.get_background_color() + Color["BLACK"]
-            else:
-                color = s.get_background_color() + Color[player.color]
-            self.screen.draw_on_map([[color + str(player)]], player.pos_x, player.pos_y)
         self.sendScreen()
 
     def sendScreen(self):
@@ -78,7 +79,7 @@ class Game:
         self.map.make_random_spawn(player)
         self.compute_scores()
 
-        if not self.is_running and len(self.players) >= 2:
+        if not self.is_running and len(self.players) >= constants.MIN_PLAYERS_TO_START:
             self.initialize_game()
 
     def handle_input(self, client, key):
@@ -101,6 +102,7 @@ class Game:
                 if s.is_owned and s.owner is dead_player:
                     s.owner = killer
         self.map.make_random_spawn(dead_player)
+        self.compute_scores(killer)
 
     def remove_player_trail(self, player):
         # This could be optimized by storing trails as a list of squares in Player
@@ -128,7 +130,7 @@ class Game:
             for x in range(len(self.map.squares)):
                 for y in range(len(self.map.squares[x])):
                     s = self.map.squares[x][y]
-                    if s.is_owned:
+                    if s.is_owned and s.owner is p:
                         p.score += 1
             if p.score == 0:
                 self.kill_player(p, potential_killer)

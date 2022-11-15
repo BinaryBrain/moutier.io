@@ -2,6 +2,7 @@ from constants import SPAWN_MARGINS
 import random
 from square import Square
 from direction import Direction
+from color import Color
 
 
 class Map:
@@ -22,13 +23,21 @@ class Map:
             asciiMap += "\r\n"
         return asciiMap
 
-    def to_lines(self):
+    def to_lines(self, players):
         lines = []
         for y in range(self.height):
             line = []
             for x in range(self.width):
                 line.append(str(self.squares[x][y]))
             lines.append(line)
+
+        for player in players:
+            s = self.squares[player.pos_x][player.pos_y]
+            if s.is_owned and s.owner is player:
+                color = s.get_background_color() + Color["BLACK"]
+            else:
+                color = s.get_background_color() + Color[player.color]
+            lines[player.pos_y][player.pos_x] = color + str(player)
         return lines
 
     def update(self, player):
