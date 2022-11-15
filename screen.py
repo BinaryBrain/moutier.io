@@ -70,7 +70,12 @@ class Screen:
             self.draw_frame(p)
             for y in range(p.height):
                 for x in range(p.width):
-                    self.display[x + p.offset_x][y + p.offset_y] = p.lines[x][y]
+                    if x == p.width - 1:
+                        self.display[x + p.offset_x][y + p.offset_y] = (
+                            p.lines[x][y] + Color["RESET"]
+                        )
+                    else:
+                        self.display[x + p.offset_x][y + p.offset_y] = p.lines[x][y]
 
         for y in range(self.height):
             for x in range(self.width):

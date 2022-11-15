@@ -28,6 +28,6 @@ class Scores:
 
             y += 2
 
-        for l in lines:
-            l[0] = Color["RESET"] + l[0]
+        for line in lines:
+            line[0] = Color["RESET"] + line[0]
         return lines
