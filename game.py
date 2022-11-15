@@ -3,7 +3,7 @@ import asyncio
 import constants
 import collisions
 from map import Map
-from color import Color, usable_colors
+from color import usable_colors
 from screen import Screen
 from trail_direction import TrailDirection
 from direction import Direction

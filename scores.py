@@ -1,3 +1,6 @@
+from color import Color
+
+
 class Scores:
     def __init__(self, width, height):
         self.width = width
@@ -24,4 +27,7 @@ class Scores:
                 lines[y][x + i] = c
 
             y += 2
+
+        for l in lines:
+            l[0] = Color["RESET"] + l[0]
         return lines
