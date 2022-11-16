@@ -12,6 +12,7 @@ class Player:
         self.pos_y = 0
         self.prev_direction = Direction.STOP
         self.direction = Direction.STOP
+        self.next_direction = Direction.STOP
         self.has_trail = False
         self.alive = True
         self.trail_start = None
@@ -30,10 +31,13 @@ class Player:
         else:
             return const.PLAYER_STOP
 
-    def define_direction(self, direction):
+    def define_next_direction(self, next_direction):
+        self.next_direction = next_direction
+
+    def update_direction(self):
         if self.direction is not Direction.STOP:
             self.prev_direction = self.direction
-        self.direction = direction
+        self.direction = self.next_direction
 
     def move(self, worldMap):
         self.prev_pos_x = self.pos_x

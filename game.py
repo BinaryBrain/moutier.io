@@ -35,9 +35,9 @@ class Game:
 
             if self.is_running:
                 for player in self.players:
+                    player.update_direction()
                     player.move(self.map)
                     self.map.update(player)
-                    player.define_direction(player.direction)
                     collisions.check_collisions(self, player)
 
                 self.timer -= 1
@@ -92,13 +92,13 @@ class Game:
     def handle_input(self, client, key):
         player = next(p for p in self.players if p.client == client)
         if key == const.KEY_UP and player.direction != Direction.DOWN:
-            player.define_direction(Direction.UP)
+            player.define_next_direction(Direction.UP)
         if key == const.KEY_DOWN and player.direction != Direction.UP:
-            player.define_direction(Direction.DOWN)
+            player.define_next_direction(Direction.DOWN)
         if key == const.KEY_LEFT and player.direction != Direction.RIGHT:
-            player.define_direction(Direction.LEFT)
+            player.define_next_direction(Direction.LEFT)
         if key == const.KEY_RIGHT and player.direction != Direction.LEFT:
-            player.define_direction(Direction.RIGHT)
+            player.define_next_direction(Direction.RIGHT)
 
     def kill_player(self, dead_player, killer=None):
         dead_player.kill()
