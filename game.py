@@ -26,8 +26,8 @@ class Game:
         self.t = 0
         self.timer = 999
         self.players = set()
-        self.map_panel = Panel(60, 30, 0, 0)
-        self.score_panel = Panel(20, 20, self.map_panel.width + 1, 0)
+        self.map_panel = Panel(60, 30, 0, 0, "Moutier.io")
+        self.score_panel = Panel(20, 20, self.map_panel.width + 1, 0, "Scoreboard")
 
     async def loop(self):
         while True:
@@ -53,12 +53,13 @@ class Game:
             self.t = self.t + 1
 
     def draw(self):
+        self.map_panel.title = str(self.timer)
         self.screen.draw_in_panel(self.map_panel, self.map.to_lines(self.players))
         max_score = self.map.width * self.map.height
         self.screen.draw_in_panel(
             self.score_panel, self.scores.to_lines(self.players, max_score)
         )
-        self.screen.draw_timer(self.timer)
+        self.screen.generate_next_display()
         self.sendScreen()
 
     def sendScreen(self):

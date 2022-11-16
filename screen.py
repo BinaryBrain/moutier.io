@@ -51,13 +51,6 @@ class Screen:
                 c + const.FRAME_PART[self.frame_elements[coords]]
             )
 
-    def draw_timer(self, timer):
-        start_x = round(self.width / 2 - len(str(timer)) / 2)
-        self.display[start_x - 1][0] = " "
-        for i, c in enumerate(str(timer)):
-            self.display[start_x + i][0] = c
-        self.display[start_x + len(str(timer))][0] = " "
-
     def compute_screen_size(self):
         max_width = 0
         max_height = 0
@@ -77,9 +70,7 @@ class Screen:
             for y in range(self.height):
                 self.display[x].append(" ")
 
-    def getCurrentScreen(self):
-        self.compute_screen_size()
-        screen = ""
+    def generate_next_display(self):
         for p in self.panels:
             for y in range(p.height):
                 for x in range(p.width):
@@ -91,9 +82,18 @@ class Screen:
                         self.display[x + p.offset_x + 1][y + p.offset_y + 1] = p.lines[
                             x
                         ][y]
-
         self.draw_frames()
 
+        for p in self.panels:
+            start_x = round(p.width / 2 - len(p.title) / 2)
+            self.display[p.offset_x + start_x - 1][p.offset_y] = " "
+            for i, c in enumerate(p.title):
+                self.display[p.offset_x + start_x + i][p.offset_y] = c
+            self.display[p.offset_x + start_x + len(p.title)][p.offset_y] = " "
+
+    def getCurrentScreen(self):
+        self.compute_screen_size()
+        screen = ""
         for y in range(self.height):
             for x in range(self.width):
                 screen += self.display[x][y]
