@@ -1,4 +1,4 @@
-from constants import SPAWN_MARGINS
+from const import SPAWN_MARGINS
 import random
 from square import Square
 from direction import Direction

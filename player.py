@@ -1,5 +1,5 @@
 from direction import Direction
-import constants
+import const
 
 
 class Player:
@@ -20,15 +20,15 @@ class Player:
 
     def __str__(self):
         if self.direction is Direction.UP:
-            return constants.PLAYER_UP
+            return const.PLAYER_UP
         elif self.direction is Direction.DOWN:
-            return constants.PLAYER_DOWN
+            return const.PLAYER_DOWN
         elif self.direction is Direction.LEFT:
-            return constants.PLAYER_LEFT
+            return const.PLAYER_LEFT
         elif self.direction is Direction.RIGHT:
-            return constants.PLAYER_RIGHT
+            return const.PLAYER_RIGHT
         else:
-            return constants.PLAYER_STOP
+            return const.PLAYER_STOP
 
     def define_direction(self, direction):
         if self.direction is not Direction.STOP:

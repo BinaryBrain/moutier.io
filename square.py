@@ -1,4 +1,4 @@
-import constants
+import const
 from color import Color, BackgroundColor
 from direction import Direction
 from trail_direction import TrailDirection
@@ -22,21 +22,21 @@ class Square:
         color = self.get_color()
         if self.has_trail:
             if self.trail_direction is TrailDirection.HORIZONTAL:
-                return color + constants.TRAIL_HORIZONTAL
+                return color + const.TRAIL_HORIZONTAL
             elif self.trail_direction is TrailDirection.VERTICAL:
-                return color + constants.TRAIL_VERTICAL
+                return color + const.TRAIL_VERTICAL
             elif self.trail_direction is TrailDirection.LEFT_DOWN:
-                return color + constants.TRAIL_LEFT_DOWN
+                return color + const.TRAIL_LEFT_DOWN
             elif self.trail_direction is TrailDirection.LEFT_UP:
-                return color + constants.TRAIL_LEFT_UP
+                return color + const.TRAIL_LEFT_UP
             elif self.trail_direction is TrailDirection.RIGHT_DOWN:
-                return color + constants.TRAIL_RIGHT_DOWN
+                return color + const.TRAIL_RIGHT_DOWN
             elif self.trail_direction is TrailDirection.RIGHT_UP:
-                return color + constants.TRAIL_RIGHT_UP
+                return color + const.TRAIL_RIGHT_UP
         elif self.is_owned:
-            return color + constants.EMPTY_SQUARE
+            return color + const.EMPTY_SQUARE
         else:
-            return color + constants.EMPTY_SQUARE
+            return color + const.EMPTY_SQUARE
 
     def get_color(self):
         color = self.get_background_color()

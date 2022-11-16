@@ -1,6 +1,6 @@
 import time
 import asyncio
-import constants
+import const
 import collisions
 from map import Map
 from color import usable_colors
@@ -18,7 +18,7 @@ from client_state import ClientState
 class Game:
     def __init__(self, server):
         self.is_running = False
-        self.fps = constants.FPS
+        self.fps = const.FPS
         self.map = Map(60, 30)
         self.scores = Scores(20, 20)
         self.server = server
@@ -27,7 +27,7 @@ class Game:
         self.timer = 999
         self.players = set()
         self.map_panel = Panel(60, 30, 0, 0)
-        self.score_panel = Panel(20, 20, self.map_panel.width, 0)
+        self.score_panel = Panel(20, 20, self.map_panel.width + 1, 0)
 
     async def loop(self):
         while True:
@@ -49,7 +49,7 @@ class Game:
                 self.draw()
 
             end_timer = time.time()
-            await asyncio.sleep(1 / constants.FPS - (end_timer - start_timer))
+            await asyncio.sleep(1 / const.FPS - (end_timer - start_timer))
             self.t = self.t + 1
 
     def draw(self):
@@ -79,18 +79,18 @@ class Game:
         self.map.make_random_spawn(player)
         self.compute_scores()
 
-        if not self.is_running and len(self.players) >= constants.MIN_PLAYERS_TO_START:
+        if not self.is_running and len(self.players) >= const.MIN_PLAYERS_TO_START:
             self.initialize_game()
 
     def handle_input(self, client, key):
         player = next(p for p in self.players if p.client == client)
-        if key == constants.KEY_UP and player.direction != Direction.DOWN:
+        if key == const.KEY_UP and player.direction != Direction.DOWN:
             player.define_direction(Direction.UP)
-        if key == constants.KEY_DOWN and player.direction != Direction.UP:
+        if key == const.KEY_DOWN and player.direction != Direction.UP:
             player.define_direction(Direction.DOWN)
-        if key == constants.KEY_LEFT and player.direction != Direction.RIGHT:
+        if key == const.KEY_LEFT and player.direction != Direction.RIGHT:
             player.define_direction(Direction.LEFT)
-        if key == constants.KEY_RIGHT and player.direction != Direction.LEFT:
+        if key == const.KEY_RIGHT and player.direction != Direction.LEFT:
             player.define_direction(Direction.RIGHT)
 
     def kill_player(self, dead_player, killer=None):

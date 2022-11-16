@@ -1,5 +1,5 @@
 from color import Color
-import constants
+import const
 
 
 class Screen:
@@ -14,28 +14,42 @@ class Screen:
     def draw_in_panel(self, panel, lines):
         if panel not in self.panels:
             self.panels.append(panel)
+            self.add_frame(panel)
             self.compute_screen_size()
         for y, line in enumerate(lines):
             for x, char in enumerate(line):
                 if x < self.width and y < self.height:
                     panel.lines[x][y] = char
 
-    def add_frame(self, width, height):
-        self.frame_elements[(0, 0)] = constants.FRAME_TOP_LEFT
-        self.frame_elements[(width - 1, 0)] = constants.FRAME_TOP_RIGHT
-        self.frame_elements[(0, height - 1)] = constants.FRAME_BOTTOM_LEFT
-        self.frame_elements[(width - 1, height - 1)] = constants.FRAME_BOTTOM_RIGHT
-        for x in range(1, width - 1):
-            self.frame_elements[(x, 0)] = constants.FRAME_HORIZONTAL
-            self.frame_elements[(x, height - 1)] = constants.FRAME_HORIZONTAL
-        for y in range(1, height - 1):
-            self.frame_elements[(0, y)] = constants.FRAME_VERTICAL
-            self.frame_elements[(width - 1, y)] = constants.FRAME_VERTICAL
+    def add_frame(self, panel):
+        width = panel.width + 2
+        height = panel.height + 2
+        o_x = panel.offset_x
+        o_y = panel.offset_y
 
-    def draw_frame(self, panel):
+        self.add_frame_element(0b0101, o_x, o_y)
+        self.add_frame_element(0b0110, o_x + width - 1, o_y)
+        self.add_frame_element(0b1001, o_x, o_y + height - 1)
+        self.add_frame_element(0b1010, o_x + width - 1, o_y + height - 1)
+        for x in range(o_x + 1, o_x + width - 1):
+            self.add_frame_element(0b0011, x, o_y)
+            self.add_frame_element(0b0011, x, o_y + height - 1)
+        for y in range(o_y + 1, o_y + height - 1):
+            self.add_frame_element(0b1100, o_x, y)
+            self.add_frame_element(0b1100, o_x + width - 1, y)
+
+    def add_frame_element(self, frame_element, x, y):
+        if (x, y) not in self.frame_elements:
+            self.frame_elements[(x, y)] = frame_element
+        else:
+            self.frame_elements[(x, y)] |= frame_element
+
+    def draw_frames(self):
         c = Color["RESET"]
         for coords in self.frame_elements:
-            self.display[coords[0]][coords[1]] = c + self.frame_elements[coords]
+            self.display[coords[0]][coords[1]] = (
+                c + const.FRAME_PART[self.frame_elements[coords]]
+            )
 
     def draw_timer(self, timer):
         start_x = round(self.width / 2 - len(str(timer)) / 2)
@@ -48,8 +62,8 @@ class Screen:
         max_width = 0
         max_height = 0
         for p in self.panels:
-            max_width = max(max_width, p.offset_x + p.width)
-            max_height = max(max_height, p.offset_y + p.height)
+            max_width = max(max_width, p.offset_x + p.width + 2)
+            max_height = max(max_height, p.offset_y + p.height + 2)
 
         if max_width > self.width or max_height > self.height:
             self.width = max_width
@@ -67,15 +81,18 @@ class Screen:
         self.compute_screen_size()
         screen = ""
         for p in self.panels:
-            self.draw_frame(p)
             for y in range(p.height):
                 for x in range(p.width):
                     if x == p.width - 1:
-                        self.display[x + p.offset_x][y + p.offset_y] = (
+                        self.display[x + p.offset_x + 1][y + p.offset_y + 1] = (
                             p.lines[x][y] + Color["RESET"]
                         )
                     else:
-                        self.display[x + p.offset_x][y + p.offset_y] = p.lines[x][y]
+                        self.display[x + p.offset_x + 1][y + p.offset_y + 1] = p.lines[
+                            x
+                        ][y]
+
+        self.draw_frames()
 
         for y in range(self.height):
             for x in range(self.width):
@@ -83,5 +100,5 @@ class Screen:
             screen += "\r\n"
         screen += Color["RESET"]  # Don't bleed on the rest of the terminal
         screenHeight = screen.count("\n")
-        screen = constants.CURSOR_PREVIOUS_LINE * screenHeight + screen
+        screen = const.CURSOR_PREVIOUS_LINE * screenHeight + screen
         return screen

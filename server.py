@@ -1,7 +1,7 @@
 import socket
 import selectors
 import asyncio
-import constants
+import const
 
 from client import Client
 from client_state import ClientState
@@ -71,7 +71,7 @@ class Server:
             self.send(client, msg)
 
     def clear_screen(self, client):
-        self.send(client, constants.CLEAR_CHARACTER)
+        self.send(client, const.CLEAR_CHARACTER)
 
     # Change the mode so that each character is sent without pressing ENTER
     def set_line_mode(self, conn):
