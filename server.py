@@ -58,6 +58,7 @@ class Server:
             self.clients.remove(
                 next(c for c in self.clients if c.conn == conn)
             )  # remove client from list
+            self.game.remove_player(client)
             conn.close()
 
     def send(self, client, msg):

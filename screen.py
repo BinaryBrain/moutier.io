@@ -51,6 +51,10 @@ class Screen:
                 c + const.FRAME_PART[self.frame_elements[coords]]
             )
 
+    def reset_panels(self):
+        self.panels = []
+        self.frame_elements = {}
+
     def compute_screen_size(self):
         max_width = 0
         max_height = 0

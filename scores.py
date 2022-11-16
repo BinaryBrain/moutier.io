@@ -5,6 +5,7 @@ class Scores:
     def __init__(self, width, height):
         self.width = width
         self.height = height
+        self.padding = 1
 
     def to_lines(self, players, max_score):
         lines = []
@@ -15,13 +16,19 @@ class Scores:
 
         y = 0
         for p in players:
-            x = 0
+            x = self.padding
             for i, c in enumerate(p.client.name):
-                lines[y][x + i] = c
+                if x + i > self.width - 2:
+                    break
+                if i == 0:
+                    lines[y][x + i] = Color[p.color] + c
+                else:
+                    lines[y][x + i] = c
+            lines[y][x + i] = lines[y][x + i] + Color["RESET"]
 
             y += 1
 
-            x = 0
+            x = self.padding
             score = f"{p.score} {round(p.score * 100/max_score)}%"
             for i, c in enumerate(score):
                 lines[y][x + i] = c

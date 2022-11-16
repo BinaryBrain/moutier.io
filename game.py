@@ -77,11 +77,17 @@ class Game:
         )
         self.players.add(player)
 
+        self.score_panel.height = len(self.players) * 3
+        self.screen.reset_panels()
+
         self.map.make_random_spawn(player)
         self.compute_scores()
 
         if not self.is_running and len(self.players) >= const.MIN_PLAYERS_TO_START:
             self.initialize_game()
+
+    def remove_player(self, client):
+        self.players.remove(next(p for p in self.players if p.client == client))
 
     def handle_input(self, client, key):
         player = next(p for p in self.players if p.client == client)
