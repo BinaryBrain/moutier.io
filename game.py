@@ -1,5 +1,4 @@
 import time
-import asyncio
 import const
 import collisions
 from map import Map
@@ -23,34 +22,25 @@ class Game:
         self.scores = Scores(20, 20)
         self.server = server
         self.screen = Screen()
-        self.t = 0
-        self.timer = 999
+        self.timer = const.TIMER
         self.players = set()
         self.map_panel = Panel(60, 30, 0, 0, "Moutier.io")
         self.score_panel = Panel(20, 20, self.map_panel.width + 1, 0, "Scoreboard")
 
-    async def loop(self):
-        while True:
-            start_timer = time.time()
+    def loop(self):
+        if self.is_running:
+            for player in self.players:
+                player.update_direction()
+                player.move(self.map)
+                self.map.update(player)
+                collisions.check_collisions(self, player)
 
-            if self.is_running:
-                for player in self.players:
-                    player.update_direction()
-                    player.move(self.map)
-                    self.map.update(player)
-                    collisions.check_collisions(self, player)
+            self.draw()
 
-                self.timer -= 1
-
-                if self.timer <= 0:
-                    self.timer = 0
-                    self.end_game()
-
-                self.draw()
-
-            end_timer = time.time()
-            await asyncio.sleep(1 / const.FPS - (end_timer - start_timer))
-            self.t = self.t + 1
+            self.timer -= 1
+            if self.timer <= 0:
+                self.timer = 0
+                self.game_over()
 
     def draw(self):
         self.map_panel.title = str(self.timer)
@@ -87,9 +77,16 @@ class Game:
             self.initialize_game()
 
     def remove_player(self, client):
-        self.players.remove(next(p for p in self.players if p.client == client))
+        player = next(p for p in self.players if p.client == client)
+        self.players.remove(player)
+        self.kill_player(player, player, False)
+        self.score_panel.height = len(self.players) * 3
+        self.screen.reset_panels()
 
     def handle_input(self, client, key):
+        if not self.is_running:
+            return
+
         player = next(p for p in self.players if p.client == client)
         if key == const.KEY_UP and player.direction != Direction.DOWN:
             player.define_next_direction(Direction.UP)
@@ -100,7 +97,7 @@ class Game:
         if key == const.KEY_RIGHT and player.direction != Direction.LEFT:
             player.define_next_direction(Direction.RIGHT)
 
-    def kill_player(self, dead_player, killer=None):
+    def kill_player(self, dead_player, killer=None, respawn=True):
         dead_player.kill()
         self.remove_player_trail(dead_player)
         for x in range(len(self.map.squares)):
@@ -113,7 +110,8 @@ class Game:
                         # suicide
                         s.is_owned = False
                         s.owner = None
-        self.map.make_random_spawn(dead_player)
+        if respawn:
+            self.map.make_random_spawn(dead_player)
         self.compute_scores(killer)
 
     def remove_player_trail(self, player):
@@ -316,6 +314,12 @@ class Game:
 
         return list(neighbors)
 
-    def end_game(self):
-        # TODO
-        return
+    def game_over(self):
+        self.is_running = False
+        for p in self.players:
+            p.define_next_direction(Direction.STOP)
+            p.update_direction()
+
+        self.draw()
+        time.sleep(const.GAME_OVER_TIMER)
+        self.server.game_over()

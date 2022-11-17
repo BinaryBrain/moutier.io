@@ -54,6 +54,7 @@ class Screen:
     def reset_panels(self):
         self.panels = []
         self.frame_elements = {}
+        self.set_empty_screen()
 
     def compute_screen_size(self):
         max_width = 0

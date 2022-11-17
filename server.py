@@ -1,3 +1,4 @@
+import time
 import socket
 import selectors
 import asyncio
@@ -50,6 +51,7 @@ class Server:
                 if client.state is ClientState.WELCOME:
                     name = data.decode("utf-8").strip()
                     self.set_name(client, name)
+                    self.send(client, "Waiting for other players to join...\r\n")
             except UnicodeDecodeError:
                 print("Control character received", data)
         else:
@@ -100,12 +102,25 @@ class Server:
                 callback(key.fileobj, mask)
             await asyncio.sleep(1 / 100)
 
+    async def game_loop(self):
+        while True:
+            start_timer = time.time()
+            self.game.loop()
+
+            end_timer = time.time()
+            await asyncio.sleep(1 / const.FPS - (end_timer - start_timer))
+
+    def game_over(self):
+        self.game = Game(self)
+        for c in self.clients:
+            self.game.add_player(c)
+
 
 try:
     server = Server()
     # Run both loops in parallel
     loop = asyncio.get_event_loop()
-    loop.create_task(server.game.loop())
+    loop.create_task(server.game_loop())
     loop.create_task(server.start())
     loop.run_forever()
 except KeyboardInterrupt:

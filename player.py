@@ -14,7 +14,6 @@ class Player:
         self.direction = Direction.STOP
         self.next_direction = Direction.STOP
         self.has_trail = False
-        self.alive = True
         self.trail_start = None
         self.trail_end = None
         self.score = 0
@@ -66,4 +65,4 @@ class Player:
             self.direction = Direction.STOP
 
     def kill(self):
-        self.alive = False
+        self.direction = Direction.STOP
