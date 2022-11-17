@@ -63,7 +63,11 @@ class Game:
         client.state = ClientState.IN_GAME
         player = Player(
             client,
-            usable_colors[len(self.players) % len(usable_colors)],
+            next(
+                c
+                for c in usable_colors
+                if not any(p for p in self.players if p.color is c)
+            ),
         )
         self.players.add(player)
 
