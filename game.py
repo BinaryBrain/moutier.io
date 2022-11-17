@@ -90,15 +90,17 @@ class Game:
         if not self.is_running:
             return
 
-        player = next(p for p in self.players if p.client == client)
-        if key == const.KEY_UP and player.direction != Direction.DOWN:
-            player.define_next_direction(Direction.UP)
-        if key == const.KEY_DOWN and player.direction != Direction.UP:
-            player.define_next_direction(Direction.DOWN)
-        if key == const.KEY_LEFT and player.direction != Direction.RIGHT:
-            player.define_next_direction(Direction.LEFT)
-        if key == const.KEY_RIGHT and player.direction != Direction.LEFT:
-            player.define_next_direction(Direction.RIGHT)
+        p = next(p for p in self.players if p.client == client)
+        if (key == const.KEY_UP or key == b"w") and p.direction != Direction.DOWN:
+            p.define_next_direction(Direction.UP)
+        if (key == const.KEY_DOWN or key == b"s") and p.direction != Direction.UP:
+            p.define_next_direction(Direction.DOWN)
+        if (key == const.KEY_LEFT or key == b"a") and p.direction != Direction.RIGHT:
+            p.define_next_direction(Direction.LEFT)
+        if (key == const.KEY_RIGHT or key == b"d") and p.direction != Direction.LEFT:
+            p.define_next_direction(Direction.RIGHT)
+        if key == b" " or key == b"p":
+            p.define_next_direction(Direction.STOP)
 
     def kill_player(self, dead_player, killer=None, respawn=True):
         dead_player.kill()
