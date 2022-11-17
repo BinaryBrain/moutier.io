@@ -56,9 +56,6 @@ class Game:
         clients = map(lambda p: p.client, self.players)
         self.server.broadcast(clients, self.screen.getCurrentScreen())
 
-    def initialize_game(self):
-        self.is_running = True
-
     def add_player(self, client):
         client.state = ClientState.IN_GAME
         player = Player(
@@ -78,7 +75,7 @@ class Game:
         self.compute_scores()
 
         if not self.is_running and len(self.players) >= const.MIN_PLAYERS_TO_START:
-            self.initialize_game()
+            self.is_running = True
 
     def remove_player(self, client):
         player = next(p for p in self.players if p.client == client)
@@ -86,6 +83,8 @@ class Game:
         self.kill_player(player, player, False)
         self.score_panel.height = len(self.players) * 3
         self.screen.reset_panels()
+        if len(self.players) == 0:
+            self.game_over()
 
     def handle_input(self, client, key):
         if not self.is_running:
@@ -325,5 +324,5 @@ class Game:
             p.update_direction()
 
         self.draw()
-        time.sleep(const.GAME_OVER_TIMER)
+        time.sleep(const.GAME_OVER_TIMER)  # FIXME this is blocking the loop
         self.server.game_over()
